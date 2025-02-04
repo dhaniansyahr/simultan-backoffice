@@ -21,7 +21,7 @@ import { useRouter } from 'next/router'
 import { checkAccess } from 'src/utils/checkAccess'
 import { getAllUserLevels } from 'src/stores/acl/aclAction'
 
-export default function AccessControlListTable() {
+export default function AclTable() {
   const dispatch = useDispatch()
   const router = useRouter()
 
