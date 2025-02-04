@@ -10,25 +10,7 @@ const navigation = (): VerticalNavItemsType => {
     },
     {
       title: 'Surat Keterangan Kuliah',
-      path: '/surat-keterangan-kuliah',
-      children: [
-        {
-          title: 'Pengajuan',
-          path: '/pengajuan'
-        },
-        {
-          title: 'Verifikasi Pengajuan',
-          path: '/verifikasi-pengajuan'
-        },
-        {
-          title: 'Persetujuan',
-          path: '/persetujuan'
-        },
-        {
-          title: 'Monitoring Progress',
-          path: '/monitoring-progress'
-        }
-      ]
+      path: '/college-certificate'
     },
     {
       title: 'Permohonan Cuti Sementara',
