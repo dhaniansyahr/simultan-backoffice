@@ -4,94 +4,26 @@ import { VerticalNavItemsType } from 'src/@core/layouts/types'
 const navigation = (): VerticalNavItemsType => {
   return [
     {
-      title: 'Dashboard',
-      path: '/dashboard',
-      icon: 'mdi:home-outline'
-    },
-    {
       title: 'Surat Keterangan Kuliah',
       path: '/college-certificate'
     },
     {
       title: 'Permohonan Cuti Sementara',
-      path: '/permmohonan-cuti-sementara',
-      children: [
-        {
-          title: 'Pengajuan',
-          path: '/pengajuan'
-        },
-        {
-          title: 'Verifikasi Pengajuan',
-          path: '/verifikasi-pengajuan'
-        },
-        {
-          title: 'Persetujuan',
-          path: '/persetujuan'
-        },
-        {
-          title: 'Monitoring Progress',
-          path: '/monitoring-progress'
-        }
-      ]
+      path: '/temporary-leave-request'
     },
-    {
-      title: 'Permohonan Aktif Kembali',
-      path: '/permmohonan-aktif-kembali',
-      children: [
-        {
-          title: 'Pengajuan',
-          path: '/pengajuan'
-        },
-        {
-          title: 'Verifikasi Pengajuan',
-          path: '/verifikasi-pengajuan'
-        },
-        {
-          title: 'Persetujuan',
-          path: '/persetujuan'
-        },
-        {
-          title: 'Monitoring Progress',
-          path: '/monitoring-progress'
-        }
-      ]
-    },
-    {
-      title: 'Perubahan Mata Kuliah',
-      path: '/perubahan-mata-kuliah',
-      children: [
-        {
-          title: 'Pengajuan',
-          path: '/pengajuan'
-        },
-        {
-          title: 'Persetujuan',
-          path: '/persetujuan'
-        },
-        {
-          title: 'Monitoring Progress',
-          path: '/monitoring-progress'
-        }
-      ]
-    },
-    {
-      title: 'Pembatalan Mata Kuliah',
-      path: '/pembatalan-mata-kuliah',
-      children: [
-        {
-          title: 'Pengajuan',
-          path: '/pengajuan'
-        },
-        {
-          title: 'Persetujuan',
-          path: '/persetujuan'
-        },
-        {
-          title: 'Monitoring Progress',
-          path: '/monitoring-progress'
-        }
-      ]
-    },
+
+    // {
+    //   title: 'Permohonan Aktif Kembali',
+    //   path: '/request-reactivation'
+    // },
+    // {
+    //   title: 'Perubahan Mata Kuliah',
+    //   path: '/change-of-course'
+    // },
+    // {
+    //   title: 'Pembatalan Mata Kuliah',
+    //   path: '/course-cancellation'
+    // },
     {
       sectionTitle: 'Others'
     },
