@@ -1,6 +1,5 @@
 import { Icon } from '@iconify/react'
 import {
-  Autocomplete,
   Box,
   Button,
   Card,
@@ -11,7 +10,6 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
-  TextField,
   Typography
 } from '@mui/material'
 import { DataGrid, gridClasses } from '@mui/x-data-grid'
@@ -20,17 +18,18 @@ import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useDispatch } from 'react-redux'
+import { createAcl, getAllFeauture, getFeatureByUserLevel } from 'src/stores/acl/aclAction'
 
 const AccessControlListEditContainer = () => {
   const router = useRouter()
+  const dispatch = useDispatch()
 
-  // const dispatch = useDispatch()
+  const { id } = router.query
 
   const [body, setBody] = useState<any>({ userLevelId: '', acl: [] })
-  const [name, setName] = useState<string>('')
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [level, setLevel] = useState<any>(null)
+
   const [features, setFeatures] = useState<any>(null)
 
   const columns = [
@@ -47,7 +46,7 @@ const AccessControlListEditContainer = () => {
       flex: 0.25,
       field: 'nama',
       headerName: 'List Feature',
-      minWidth: 160,
+      maxWidth: 360,
       renderCell: (params: any) => {
         return <span>{params?.row?.name.replaceAll('_', ' ') ?? '-'}</span>
       }
@@ -65,132 +64,125 @@ const AccessControlListEditContainer = () => {
               gap: 2
             }}
           >
-            {params?.row?.action?.map((item: any, index: number) => (
-              <FormControlLabel
-                key={index}
-                control={<Checkbox />}
-                label={item.name}
-                onClick={() => {
-                  const acl = [...body.acl]
-                  const featureIndex = acl.findIndex(f => f.featureName === params.row.name)
+            {params?.row?.action?.map((item: any, index: number) => {
+              const featureName = params.row.name
+              const isChecked =
+                body?.acl &&
+                Array.isArray(body?.acl) &&
+                body?.acl.some((aclItem: any) => aclItem.feature === featureName && aclItem.actions.includes(item.name))
 
-                  if (featureIndex === -1) {
-                    acl.push({
-                      featureName: params.row.name,
-                      actions: [item.name]
-                    })
-                  } else {
-                    const feature = acl[featureIndex]
-                    const actionIndex = feature.actions.indexOf(item.name)
-
-                    if (actionIndex === -1) {
-                      feature.actions.push(item.name)
-                    } else {
-                      feature.actions.splice(actionIndex, 1)
-                    }
-
-                    // Remove feature if no actions left
-                    if (feature.actions.length === 0) {
-                      acl.splice(featureIndex, 1)
-                    }
-                  }
-
-                  setBody({ ...body, acl })
-                }}
-              />
-            ))}
+              return (
+                <FormControlLabel
+                  key={index}
+                  control={<Checkbox checked={isChecked} onChange={() => handleAclChange(featureName, item.name)} />}
+                  label={item.name}
+                />
+              )
+            })}
           </div>
         )
       }
     }
   ]
 
-  // const handleGetAllLevels = async () => {
-  //   setIsLoading(true)
+  const handleAclChange = (featureName: string, actionName: string) => {
+    // Ensure body.acl is an array, defaulting to an empty array if it's not
+    const acl = Array.isArray(body.acl) ? [...body.acl] : []
 
-  //   const body: any = {
-  //     params: {
-  //       page: 1,
-  //       rows: 1000
-  //     }
-  //   }
+    const featureIndex = acl.findIndex(f => f.feature === featureName)
 
-  //   // @ts-ignore
-  //   await dispatch(getAllUserLevel({ data: body })).then((res: any) => {
-  //     if (res?.meta?.requestStatus !== 'fulfilled') {
-  //       toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-  //       setIsLoading(false)
-  //       setLevel(null)
+    if (featureIndex === -1) {
+      acl.push({
+        feature: featureName,
+        actions: [actionName]
+      })
+    } else {
+      const feature = acl[featureIndex]
+      const actionIndex = feature.actions.indexOf(actionName)
 
-  //       return
-  //     }
+      if (actionIndex === -1) {
+        feature.actions.push(actionName)
+      } else {
+        feature.actions.splice(actionIndex, 1)
+      }
 
-  //     setIsLoading(false)
-  //     setLevel(res?.payload?.content?.entries)
-  //   })
-  // }
+      if (feature.actions.length === 0) {
+        acl.splice(featureIndex, 1)
+      }
+    }
 
-  // const handleGetAllFeatures = async () => {
-  //   setIsLoading(true)
+    setBody({ ...body, acl })
+  }
+  const handleGetAllFeatures = async () => {
+    setIsLoading(true)
 
-  //   // @ts-ignore
-  //   await dispatch(getAllFeauture({ data: {} })).then((res: any) => {
-  //     if (res?.meta?.requestStatus !== 'fulfilled') {
-  //       toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-  //       setIsLoading(false)
-  //       setFeatures(null)
+    // @ts-ignore
+    await dispatch(getAllFeauture({ data: {} })).then((res: any) => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
+        setIsLoading(false)
+        setFeatures(null)
 
-  //       return
-  //     }
+        return
+      }
 
-  //     setIsLoading(false)
-  //     setFeatures(res?.payload?.content)
-  //   })
-  // }
+      setIsLoading(false)
+      setFeatures(res?.payload?.content)
+    })
+  }
 
-  // const handleCreate = async () => {
-  //   setIsLoading(true)
-  //   toast.loading('Loading...')
+  const handleGetDetail = async () => {
+    setIsLoading(true)
 
-  //   // @ts-ignore
-  //   const levelId = await dispatch(createUserLevel({ data: { name } })).then((res: any) => {
-  //     if (res?.meta?.requestStatus !== 'fulfilled') {
-  //       toast.dismiss()
-  //       toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-  //       setIsLoading(false)
+    // @ts-ignore
+    await dispatch(getFeatureByUserLevel({ id })).then((res: any) => {
+      setIsLoading(false)
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
 
-  //       return
-  //     }
+        setBody({ userLevelId: '', acl: [] })
 
-  //     return res?.payload?.content?.id
-  //   })
+        return
+      }
 
-  //   if (levelId) {
-  //     const bodyAcl: any = {
-  //       ...body,
-  //       userLevelId: levelId
-  //     }
+      setBody({
+        userLevelId: id,
+        acl: res?.payload?.content || []
+      })
+    })
+  }
 
-  //     // @ts-ignore
-  //     await dispatch(createAcl({ data: bodyAcl })).then((res: any) => {
-  //       setIsLoading(false)
-  //       toast.dismiss()
-  //       if (res?.meta?.requestStatus !== 'fulfilled') {
-  //         toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
+  const handleCreate = async () => {
+    setIsLoading(true)
+    toast.loading('Loading...')
 
-  //         return
-  //       }
+    const mappedBody: any = {
+      userLevelId: body.userLevelId,
+      acl: body?.acl?.map((item: any) => ({
+        featureName: item.feature,
+        actions: item.actions
+      }))
+    }
 
-  //       toast.success(res?.payload?.message)
-  //       router.push('/admin/acl')
-  //     })
-  //   }
-  // }
+    // @ts-ignore
+    await dispatch(createAcl({ data: mappedBody })).then((res: any) => {
+      setIsLoading(false)
+      toast.dismiss()
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
 
-  // useEffect(() => {
-  //   handleGetAllLevels()
-  //   handleGetAllFeatures()
-  // }, [])
+        return
+      }
+
+      toast.success(res?.payload?.message)
+      router.back()
+    })
+  }
+
+  useEffect(() => {
+    handleGetAllFeatures()
+    handleGetDetail()
+  }, [id])
 
   return (
     <Grid container spacing={6}>
@@ -199,13 +191,12 @@ const AccessControlListEditContainer = () => {
           <CardHeader
             title={
               <Box display={'flex'} gap={2} alignItems={'center'}>
-                <Link href={`/admin/acl`}>
-                  <IconButton>
-                    <Icon icon='ic:baseline-arrow-back' />
-                  </IconButton>
-                </Link>
+                <IconButton onClick={() => router.back()}>
+                  <Icon icon='ic:baseline-arrow-back' />
+                </IconButton>
+
                 <Typography variant='h6' sx={{ fontWeight: 500 }}>
-                  Tambah Akses
+                  Edit Akses
                 </Typography>
               </Box>
             }
@@ -220,10 +211,10 @@ const AccessControlListEditContainer = () => {
           <CardHeader
             action={
               <Box display={'flex'} gap={2} alignItems={'center'}>
-                <Button variant='contained' color='secondary' onClick={() => router.push('/access-control-list')}>
+                <Button variant='contained' color='secondary'>
                   Batal
                 </Button>
-                <Button variant='contained' color='primary'>
+                <Button variant='contained' color='primary' onClick={handleCreate}>
                   Simpan
                 </Button>
               </Box>
@@ -239,12 +230,6 @@ const AccessControlListEditContainer = () => {
           <CardHeader
             title={
               <Box display={'flex'} gap={2} alignItems={'center'}>
-                <TextField
-                  label='Nama Role'
-                  placeholder='Nama Role'
-                  value={name ?? ''}
-                  onChange={e => setName(e.target.value)}
-                />
                 {/* <Autocomplete
                   size='small'
                   options={level ?? []}

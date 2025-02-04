@@ -19,12 +19,13 @@ import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import { checkAccess } from 'src/utils/checkAccess'
+import { getAllUserLevels } from 'src/stores/acl/aclAction'
 
 export default function AccessControlListTable() {
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
   const router = useRouter()
 
-  //   const { refresher } = useSelector((state: any) => state.adminUserSetting)
+  const { refresher } = useSelector((state: any) => state.acl)
 
   const [data, setData] = useState<any>(null)
 
@@ -32,8 +33,6 @@ export default function AccessControlListTable() {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [search, setSearch] = useState<any>('')
-
-  const [level, setLevel] = useState<any>(null)
 
   const columns = [
     {
@@ -71,7 +70,10 @@ export default function AccessControlListTable() {
             }}
           >
             {(checkAccess('USER_LEVEL', 'UPDATE') || checkAccess('ACL', 'UPDATE')) && (
-              <IconButton id={params?.row?.id} onClick={() => router.push(`/admin/acl/${params?.row?.id}/edit`)}>
+              <IconButton
+                id={params?.row?.id}
+                onClick={() => router.push(`/access-control-list/${params?.row?.id}/edit`)}
+              >
                 <Icon icon='mdi:pencil-outline' />
               </IconButton>
             )}
@@ -86,46 +88,46 @@ export default function AccessControlListTable() {
     }
   ]
 
-  //   const handleGetAll = async (isPagination = false) => {
-  //     setIsLoading(true)
+  const handleGetAll = async (isPagination = false) => {
+    setIsLoading(true)
 
-  //     const body = {
-  //       params: {
-  //         page: isPagination ? page : 1,
-  //         rows: pageSize,
-  //         searchFilters: {
-  //           name: search
-  //         }
-  //       }
-  //     } as any
+    const body = {
+      params: {
+        page: isPagination ? page : 1,
+        rows: pageSize,
+        searchFilters: {
+          name: search
+        }
+      }
+    } as any
 
-  //     if (!search) {
-  //       delete body.params.searchFilters['name']
-  //     }
+    if (!search) {
+      delete body.params.searchFilters['name']
+    }
 
-  //     body.params.searchFilters = JSON.stringify(body.params.searchFilters)
+    body.params.searchFilters = JSON.stringify(body.params.searchFilters)
 
-  //     // @ts-ignore
-  //     await dispatch(getAllLevelAkses({ data: body })).then((res: any) => {
-  //       if (
-  //         !(res?.payload?.content?.entries ?? []).some((obj: any) =>
-  //           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
-  //         ) &&
-  //         isPagination
-  //       ) {
-  //         const _entries = [...(data?.entries ?? []), ...(res?.payload?.content?.entries ?? [])]
-  //         setData(Object.assign({}, res?.payload?.content, { entries: _entries }))
-  //       } else {
-  //         if (!res?.payload?.content?.entries?.length && res?.payload?.content?.totalPage === 1) {
-  //           setData(null)
-  //         } else if (!isPagination) {
-  //           setData(res?.payload?.content)
-  //         }
-  //       }
-  //     })
+    // @ts-ignore
+    await dispatch(getAllUserLevels({ data: body })).then((res: any) => {
+      if (
+        !(res?.payload?.content?.entries ?? []).some((obj: any) =>
+          (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
+        ) &&
+        isPagination
+      ) {
+        const _entries = [...(data?.entries ?? []), ...(res?.payload?.content?.entries ?? [])]
+        setData(Object.assign({}, res?.payload?.content, { entries: _entries }))
+      } else {
+        if (!res?.payload?.content?.entries?.length && res?.payload?.content?.totalPage === 1) {
+          setData(null)
+        } else if (!isPagination) {
+          setData(res?.payload?.content)
+        }
+      }
+    })
 
-  //     setIsLoading(false)
-  //   }
+    setIsLoading(false)
+  }
 
   const handleDelete = async (id: any) => {
     setIsLoading(true)
@@ -148,17 +150,17 @@ export default function AccessControlListTable() {
     []
   )
 
-  //   useEffect(() => {
-  //     setPage(1)
+  useEffect(() => {
+    setPage(1)
 
-  //     handleGetAll(false)
-  //   }, [refresher, search, level])
+    handleGetAll(false)
+  }, [refresher, search])
 
-  //   useEffect(() => {
-  //     if (page !== 1) {
-  //       handleGetAll(true)
-  //     }
-  //   }, [page, pageSize])
+  useEffect(() => {
+    if (page !== 1) {
+      handleGetAll(true)
+    }
+  }, [page, pageSize])
 
   return (
     <>
@@ -189,26 +191,27 @@ export default function AccessControlListTable() {
               />
             </Box>
           }
-          action={
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {(checkAccess('USER_LEVEL', 'CREATE') || checkAccess('ACL', 'CREATE')) && (
-                <Button
-                  variant='contained'
-                  color='primary'
-                  sx={{ mb: 2 }}
-                  onClick={() => router.push('/access-control-list/create')}
-                >
-                  Tambah Akses
-                </Button>
-              )}
-            </Box>
-          }
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: { xs: 'start', md: 'center' },
             borderBottom: '1px solid #f4f4f4'
           }}
+
+          // action={
+          //   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          //     {(checkAccess('USER_LEVEL', 'CREATE') || checkAccess('ACL', 'CREATE')) && (
+          //       <Button
+          //         variant='contained'
+          //         color='primary'
+          //         sx={{ mb: 2 }}
+          //         onClick={() => router.push('/access-control-list/create')}
+          //       >
+          //         Tambah Akses
+          //       </Button>
+          //     )}
+          //   </Box>
+          // }
         />
         <CardContent style={{ paddingInline: '10px' }}>
           <DataGrid
