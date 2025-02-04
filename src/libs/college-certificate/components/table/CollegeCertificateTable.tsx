@@ -18,21 +18,25 @@ import { Icon } from '@iconify/react'
 import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { getAllCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import { checkAccess } from 'src/utils/checkAccess'
+import moment from 'moment'
+import VerificationCollegeCertificateDialog from '../dialogs/VerificationCollegeCertificateDialog'
 
 export default function CollegeCertificateTable() {
-  //   const dispatch = useDispatch()
+  const dispatch = useDispatch()
   const router = useRouter()
 
-  //   const { refresher } = useSelector((state: any) => state.collegeCertificate)
+  const { refresher } = useSelector((state: any) => state.collegeCertificate)
 
   const [data, setData] = useState<any>(null)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
-  const [search, setSearch] = useState<any>('')
 
   const [itemSelected, setItemSelected] = useState<any>(null)
+  const [isDialogVerificationOpen, setIsDialogVerificationOpen] = useState<boolean>(false)
 
   const columns = [
     {
@@ -48,11 +52,11 @@ export default function CollegeCertificateTable() {
     {
       flex: 0.25,
       field: 'daftar pengajuan',
-      headerName: 'Daftar Pengajuan',
+      headerName: 'Tipe Surat Pengajuan',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.daftarPengajuan}</span>
+        return <span>{params?.row?.type ?? '-'}</span>
       }
     },
     {
@@ -62,7 +66,7 @@ export default function CollegeCertificateTable() {
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.status}</span>
+        return <span>{params?.row?.status ?? '-'}</span>
       }
     },
     {
@@ -72,7 +76,7 @@ export default function CollegeCertificateTable() {
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.tglPengajuan}</span>
+        return <span>{moment(params?.row?.createdAt).format('DD MMMM YYYY HH:mm')}</span>
       }
     },
     {
@@ -82,7 +86,7 @@ export default function CollegeCertificateTable() {
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.disetujuiOleh}</span>
+        return <span>{params?.row?.approvedBy?.fulname ?? '-'}</span>
       }
     },
     {
@@ -92,7 +96,7 @@ export default function CollegeCertificateTable() {
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.menungguPersetujuanOleh}</span>
+        return <span>{params?.row?.remainingApproved?.fullname ?? '-'}</span>
       }
     },
     {
@@ -102,14 +106,14 @@ export default function CollegeCertificateTable() {
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.ditolakOleh}</span>
+        return <span>{params?.row?.rejectedBy?.fullname ?? '-'}</span>
       }
     },
     {
       flex: 0.25,
       field: 'action',
       headerName: 'ACTION',
-      minWidth: 160,
+      minWidth: 260,
       sortable: false,
       renderCell: (params: any) => {
         return (
@@ -119,103 +123,97 @@ export default function CollegeCertificateTable() {
               gap: 2
             }}
           >
-            <IconButton
-              id={params?.row?.id}
-              onClick={() => {
-                router.push('/college-certificate/edit')
-                setItemSelected(params.row)
-              }}
-            >
-              <Icon icon='mdi:pencil-outline' />
-            </IconButton>
+            {checkAccess('SURAT_KETERANGAN_KULIAH', 'UPDATE') && (
+              <IconButton
+                id={params?.row?.id}
+                onClick={() => {
+                  router.push('/college-certificate/edit')
+                  setItemSelected(params.row)
+                }}
+              >
+                <Icon icon='mdi:pencil-outline' />
+              </IconButton>
+            )}
 
-            <IconButton id={params?.row?.id}>
-              <Icon icon='mdi:trash' />
-            </IconButton>
+            {checkAccess('SURAT_KETERANGAN_KULIAH', 'DELETE') && (
+              <IconButton
+                id={params?.row?.id}
+
+                // onClick={() => {
+                //   router.push('/college-certificate/edit')
+                //   setItemSelected(params.row)
+                // }}
+              >
+                <Icon icon='mdi:trash' />
+              </IconButton>
+            )}
+
+            {checkAccess('SURAT_KETERANGAN_KULIAH', 'VERIFICATION') && (
+              <Button
+                size='small'
+                color='primary'
+                variant='contained'
+                onClick={() => setIsDialogVerificationOpen(true)}
+              >
+                Verifikasi
+              </Button>
+            )}
           </div>
         )
       }
     }
   ]
 
-  //   const handleGetAll = async (isPagination = false) => {
-  //     setIsLoading(true)
+  const handleGetAll = async (isPagination = false) => {
+    setIsLoading(true)
 
-  //     const body = {
-  //       params: {
-  //         page: isPagination ? page : 1,
-  //         rows: pageSize
-  //       }
-  //     } as any
+    const body = {
+      params: {
+        page: isPagination ? page : 1,
+        rows: pageSize
+      }
+    } as any
 
-  //     // @ts-ignore
-  //     await dispatch(getAllCollegeCertificate({ data: body })).then((res: any) => {
-  //       if (
-  //         !(res.payload.content?.entries ?? []).some((obj: any) =>
-  //           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
-  //         ) &&
-  //         isPagination
-  //       ) {
-  //         const _entries = [...(data?.entries ?? []), ...(res.payload.content?.entries ?? [])]
-  //         setData(Object.assign({}, res.payload.content, { entries: _entries }))
-  //       } else {
-  //         if (!res.payload.content?.entries?.length && res.payload.content?.totalPage === 1) {
-  //           setData(null)
-  //         } else if (!isPagination) {
-  //           setData(res.payload.content)
-  //         }
-  //       }
-  //     })
+    // @ts-ignore
+    await dispatch(getAllCollegeCertificate({ data: body })).then((res: any) => {
+      if (
+        !(res.payload.content?.entries ?? []).some((obj: any) =>
+          (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
+        ) &&
+        isPagination
+      ) {
+        const _entries = [...(data?.entries ?? []), ...(res.payload.content?.entries ?? [])]
+        setData(Object.assign({}, res.payload.content, { entries: _entries }))
+      } else {
+        if (!res.payload.content?.entries?.length && res.payload.content?.totalPage === 1) {
+          setData(null)
+        } else if (!isPagination) {
+          setData(res.payload.content)
+        }
+      }
+    })
 
-  //     setIsLoading(false)
-  //   }
+    setIsLoading(false)
+  }
 
-  //   const handleDelete = async (id: string) => {
-  //     setIsLoading(true)
-  //     toast.loading('Waiting ...')
+  // const handleSearch = useCallback(
+  //   debounce((query: any) => {
+  //     setSearch(query)
+  //   }, 300),
+  //   []
+  // )
 
-  //     const body = {
-  //       params: {
-  //         ids: JSON.stringify([id])
-  //       }
-  //     }
+  useEffect(() => {
+    setPage(1)
 
-  //     // @ts-ignore
-  //     await dispatch(deleteEmployeeList({ data: body })).then((res: any) => {
-  //       if (res.meta.requestStatus !== 'fulfilled') {
-  //         toast.dismiss()
-  //         toast.error(res.payload?.response?.data?.errors?.[0]?.message ?? res.payload?.response?.data.message)
-  //         setIsLoading(false)
+    handleGetAll(false)
+  }, [refresher])
 
-  //         return
-  //       }
-
-  //       toast.dismiss()
-  //       toast.success(res.payload.message)
-  //       setIsLoading(false)
-
-  //       //  dispatch(setRefresher())
-  //     })
-  //   }
-
-  const handleSearch = useCallback(
-    debounce((query: any) => {
-      setSearch(query)
-    }, 300),
-    []
-  )
-
-  //   useEffect(() => {
-  //     setPage(1)
-
-  //     handleGetAll(false)
-  //   }, [refresher, search])
-
-  //   useEffect(() => {
-  //     if (page !== 1) {
-  //       handleGetAll(true)
-  //     }
-  //   }, [page, pageSize])
+  useEffect(() => {
+    if (page !== 1) {
+      handleGetAll(true)
+    }
+  }, [page, pageSize])
 
   return (
     <>
@@ -238,24 +236,26 @@ export default function CollegeCertificateTable() {
         <CardHeader
           title={
             <Box display={'flex'} flexWrap={'wrap'} gap={'12px'} sx={{ mb: { xs: 8, md: 0 } }}>
-              <TextField
+              {/* <TextField
                 size='small'
                 placeholder='Cari Status'
                 onChange={(e: any) => handleSearch(e.target.value)}
                 sx={{ maxWidth: 200 }}
-              />
+              /> */}
             </Box>
           }
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              <Button
-                variant='contained'
-                color='primary'
-                sx={{ mb: 2 }}
-                onClick={() => router.push('/college-certificate/create')}
-              >
-                Buat Surat Keterangan Kuliah
-              </Button>
+              {checkAccess('SURAT_KETERANGAN_KULIAH', 'CREATE') && (
+                <Button
+                  variant='contained'
+                  color='primary'
+                  sx={{ mb: 2 }}
+                  onClick={() => router.push('/college-certificate/create')}
+                >
+                  Buat Surat Keterangan Kuliah
+                </Button>
+              )}
             </Box>
           }
           sx={{
@@ -295,6 +295,11 @@ export default function CollegeCertificateTable() {
           />
         </CardContent>
       </Card>
+
+      <VerificationCollegeCertificateDialog
+        open={isDialogVerificationOpen}
+        onClose={(v: boolean) => setIsDialogVerificationOpen(v)}
+      />
     </>
   )
 }

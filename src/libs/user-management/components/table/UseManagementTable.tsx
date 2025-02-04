@@ -1,6 +1,5 @@
 import { Icon } from '@iconify/react'
 import {
-  Autocomplete,
   Box,
   Button,
   Card,
@@ -18,16 +17,15 @@ import { useCallback, useEffect, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
-import toast from 'react-hot-toast'
-
 import { checkAccess } from 'src/utils/checkAccess'
 import UserManagementDialogAdd from '../dialog/UserManagementDialogAdd'
 import UserManagementDialogEdit from '../dialog/UserManagementDIalogEdit'
+import { getAllUsers } from 'src/stores/user/userAction'
 
 export default function UserManagementTable() {
-  //   const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
-  //   const { refresher } = useSelector((state: any) => state.adminUserSetting)
+  const { refresher } = useSelector((state: any) => state.users)
 
   const [data, setData] = useState<any>(null)
 
@@ -35,10 +33,6 @@ export default function UserManagementTable() {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [search, setSearch] = useState<any>('')
-
-  const [userLevels, setUserLevels] = useState<any>(null)
-  const [level, setLevel] = useState<any>(null)
-  const [lokasi, setLokasi] = useState<any>(null)
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false)
@@ -77,47 +71,14 @@ export default function UserManagementTable() {
     },
     {
       flex: 0.25,
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return (
-          <span>
-            <Chip
-              label={params?.row?.status ?? '-'}
-              color='primary'
-              size='small'
-              sx={{
-                backgroundColor: params?.row?.status === 'Aktif' ? '#4CAF5022' : '#6D788D22',
-                color: params?.row?.status === 'Aktif' ? '#4CAF50' : '#6D788D'
-              }}
-            />
-          </span>
-        )
-      }
-    },
-    {
-      flex: 0.25,
       field: 'level',
-      headerName: 'Level',
+      headerName: 'Level AKSEs',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.level?.name ?? '-'}</span>
+        return <span>{params?.row?.UserLevel?.name ?? '-'}</span>
       }
     },
-
-    //     {
-    //       flex: 0.25,
-    //       field: 'lastLogin',
-    //       headerName: 'Terakhir Login',
-    //       minWidth: 160,
-    //       sortable: false,
-    //       renderCell: (params: any) => {
-    //         return <span>{moment(params?.row?.level?.updateAt).format('YYYY-MM-DD HH:mm')}</span>
-    //       }
-    //     },
     {
       flex: 0.25,
       field: 'action',
@@ -132,128 +93,68 @@ export default function UserManagementTable() {
               gap: 2
             }}
           >
-            {checkAccess('USER_SETTING', 'UPDATE') && (
-              <IconButton
-                id={params?.row?.id}
-                onClick={() => {
-                  setItemSelected(params.row)
-                  setIsEditDialogOpen(true)
-                }}
-              >
-                <Icon icon='mdi:pencil-outline' />
-              </IconButton>
-            )}
-            {checkAccess('USER_SETTING', 'DELETE') && (
-              <IconButton onClick={() => handleDelete(params?.row?.id)} id={params?.row?.id}>
-                <Icon icon='mdi:trash' />
-              </IconButton>
-            )}
+            <IconButton
+              id={params?.row?.id}
+
+              // onClick={() => {
+              //   setItemSelected(params.row)
+              //   setIsEditDialogOpen(true)
+              // }}
+            >
+              <Icon icon='mdi:pencil-outline' />
+            </IconButton>
+
+            <IconButton
+
+            // onClick={() => handleDelete(params?.row?.id)} id={params?.row?.id}
+            >
+              <Icon icon='mdi:trash' />
+            </IconButton>
           </div>
         )
       }
     }
   ]
 
-  //   const handleGetAll = async (isPagination = false) => {
-  //     setIsLoading(true)
-
-  //     const body = {
-  //       params: {
-  //         page: isPagination ? page : 1,
-  //         rows: pageSize,
-  //         searchFilters: {
-  //           name: search
-  //         },
-  //         filters: {
-  //           'level.id': level?.id
-  //         }
-  //       }
-  //     } as any
-
-  //     if (!search) {
-  //       delete body.params.searchFilters['name']
-  //     }
-
-  //     if (!level) {
-  //       delete body.params.filters['level.id']
-  //     }
-
-  //     body.params.searchFilters = JSON.stringify(body.params.searchFilters)
-  //     body.params.filters = JSON.stringify(body.params.filters)
-
-  //     // @ts-ignore
-  //     await dispatch(getAllAdminUserSetting({ data: body })).then((res: any) => {
-  //       if (
-  //         !(res?.payload?.content?.entries ?? []).some((obj: any) =>
-  //           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
-  //         ) &&
-  //         isPagination
-  //       ) {
-  //         const _entries = [...(data?.entries ?? []), ...(res?.payload?.content?.entries ?? [])]
-  //         setData(Object.assign({}, res?.payload?.content, { entries: _entries }))
-  //       } else {
-  //         if (!res?.payload?.content?.entries?.length && res?.payload?.content?.totalPage === 1) {
-  //           setData(null)
-  //         } else if (!isPagination) {
-  //           setData(res?.payload?.content)
-  //         }
-  //       }
-  //     })
-
-  //     setIsLoading(false)
-  //   }
-
-  //   const handleGetAllUserLevel = async () => {
-  //     setIsLoading(true)
-
-  //     const body: any = {
-  //       params: {
-  //         page: 1,
-  //         rows: 1000
-  //       }
-  //     }
-
-  //     // @ts-ignore
-  //     await dispatch(getAllUserLevel({ data: body })).then((res: any) => {
-  //       if (res?.meta?.requestStatus !== 'fulfilled') {
-  //         toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-  //         setIsLoading(false)
-  //         setUserLevels(null)
-
-  //         return
-  //       }
-
-  //       setIsLoading(false)
-  //       setUserLevels(res?.payload?.content?.entries)
-  //     })
-  //   }
-
-  const handleDelete = async (id: any) => {
+  const handleGetAll = async (isPagination = false) => {
     setIsLoading(true)
-    toast.loading('Loading...')
 
     const body = {
       params: {
-        ids: JSON.stringify([id])
+        page: isPagination ? page : 1,
+        rows: pageSize,
+        searchFilters: {
+          name: search
+        }
       }
+    } as any
+
+    if (!search) {
+      delete body.params.searchFilters
     }
 
+    body.params.searchFilters = JSON.stringify(body.params.searchFilters)
+
     // @ts-ignore
-    await dispatch(deleteAdminUserSetting({ data: body })).then((res: any) => {
-      if (res?.meta?.requestStatus !== 'fulfilled') {
-        toast.dismiss()
-        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-        setIsLoading(false)
-
-        return
+    await dispatch(getAllUsers({ data: body })).then((res: any) => {
+      if (
+        !(res?.payload?.content?.entries ?? []).some((obj: any) =>
+          (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
+        ) &&
+        isPagination
+      ) {
+        const _entries = [...(data?.entries ?? []), ...(res?.payload?.content?.entries ?? [])]
+        setData(Object.assign({}, res?.payload?.content, { entries: _entries }))
+      } else {
+        if (!res?.payload?.content?.entries?.length && res?.payload?.content?.totalPage === 1) {
+          setData(null)
+        } else if (!isPagination) {
+          setData(res?.payload?.content)
+        }
       }
-
-      toast.dismiss()
-      toast.success(res?.payload?.message)
-      setIsLoading(false)
-
-      //  dispatch(setRefresher())
     })
+
+    setIsLoading(false)
   }
 
   const handleSearch = useCallback(
@@ -263,21 +164,17 @@ export default function UserManagementTable() {
     []
   )
 
-  //   useEffect(() => {
-  //     setPage(1)
+  useEffect(() => {
+    setPage(1)
 
-  //     handleGetAll(false)
-  //   }, [refresher, search, level])
+    handleGetAll(false)
+  }, [refresher, search])
 
-  //   useEffect(() => {
-  //     if (page !== 1) {
-  //       handleGetAll(true)
-  //     }
-  //   }, [page, pageSize])
-
-  //   useEffect(() => {
-  //     handleGetAllUserLevel()
-  //   }, [])
+  useEffect(() => {
+    if (page !== 1) {
+      handleGetAll(true)
+    }
+  }, [page, pageSize])
 
   return (
     <>
@@ -305,25 +202,6 @@ export default function UserManagementTable() {
                 placeholder='Cari Nama'
                 onChange={(e: any) => handleSearch(e.target.value)}
                 sx={{ maxWidth: 200 }}
-              />
-
-              <Autocomplete
-                size='small'
-                options={[]}
-                getOptionLabel={(option: any) => option.label}
-                onChange={(e, v) => setLokasi(v)}
-                renderInput={params => <TextField {...params} label='Status' />}
-                sx={{ minWidth: 200 }}
-              />
-
-              <Autocomplete
-                size='small'
-                options={userLevels ?? []}
-                getOptionLabel={option => option.name}
-                onChange={(e, v) => setLevel(v)}
-                value={level ?? null}
-                renderInput={params => <TextField {...params} label='Jabatan' />}
-                sx={{ minWidth: 200 }}
               />
             </Box>
           }

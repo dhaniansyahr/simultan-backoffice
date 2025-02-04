@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material'
 import React from 'react'
-import AccessControlListTable from '../components/table/accessControlListTable'
+import AccessControlListTable from '../components/table/AccessControlListTable'
 
 const MainContainer = () => {
   return (

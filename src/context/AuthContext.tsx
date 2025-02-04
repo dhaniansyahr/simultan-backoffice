@@ -78,7 +78,13 @@ const AuthProvider = ({ children }: Props) => {
         window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.content?.token)
 
         setUser({ ...response.data.content?.user, role: 'ADMIN' })
-        await window.localStorage.setItem('userData', JSON.stringify({ ...response.data.content?.user, role: 'ADMIN' }))
+        await window.localStorage.setItem(
+          'userData',
+          JSON.stringify({
+            ...response.data.content?.user,
+            role: response.data.content?.user?.UserLevel?.name ?? 'ADMIN'
+          })
+        )
       })
       .then(() => {
         api

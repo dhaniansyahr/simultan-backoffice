@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ChangeEvent } from 'react'
 import { Icon } from '@iconify/react'
 import {
   Box,
@@ -12,50 +12,86 @@ import {
   Grid,
   Autocomplete,
   CardActions,
-  ListItem
+  ListItem,
+  InputLabel
 } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
+import { useDispatch } from 'react-redux'
+import { createCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import { uploadToStorage } from 'src/stores/storage/storageAction'
+import { tipeSurat } from '../consts'
 
 const CollegeCertificateCreate = () => {
-  //   const dispatch = useDispatch()
+  const dispatch = useDispatch()
   const router = useRouter()
 
   const { watch, setValue, handleSubmit, reset } = useForm()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [data, setData] = useState<any>([])
-  const [errors, setErrors] = useState<any>(null)
+  const [fileSelected, setFileSelected] = useState<any>(null)
 
-  //   const handleCreate = async (value: any, id: any) => {
-  //     setIsLoading(true)
-  //     toast.loading('Waiting ...')
+  const handleFileUpload = async (file: any) => {
+    const body: any = {
+      part: 'BOOTCAMP',
+      files: file
+    }
 
-  //     const body: any = {}
+    // @ts-ignore
+    const res: any = await dispatch(uploadToStorage({ data: body }))
 
-  //     // @ts-ignore
-  //     await dispatch(createDepreciation({ data: body })).then((res: any) => {
-  //       if (res?.meta?.requestStatus !== 'fulfilled') {
-  //         setIsLoading(false)
-  //         toast.dismiss()
-  //         toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-  //         setErrors(res?.payload?.response?.data?.errors)
+    if (res?.meta?.requestStatus !== 'fulfilled') {
+      setIsLoading(false)
+      toast.error(res?.payload?.response?.message)
 
-  //         return
-  //       }
+      return
+    }
 
-  //       setIsLoading(false)
-  //       toast.dismiss()
-  //       toast.success(res?.payload?.message)
+    return res.payload?.data
+  }
 
-  //       router.push('/college-certificate')
-  //     })
-  //   }
+  const handleCreate = async (value: any, id: any) => {
+    setIsLoading(true)
+    toast.loading('Waiting ...')
+
+    const body: any = {
+      type: value?.tipe?.value,
+      fileUrl: fileSelected[0]?.previewUrl
+    }
+
+    // @ts-ignore
+    await dispatch(createCollegeCertificate({ data: body })).then((res: any) => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        setIsLoading(false)
+        toast.dismiss()
+        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
+
+        return
+      }
+
+      setIsLoading(false)
+      toast.dismiss()
+      toast.success(res?.payload?.message)
+
+      router.back()
+    })
+  }
+
+  const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      const newFiles: any[] = Array.from(files).map(file => ({
+        previewUrl: URL.createObjectURL(file),
+        file: file
+      }))
+
+      setFileSelected([...newFiles])
+    }
+  }
 
   return (
     <>
@@ -64,7 +100,7 @@ const CollegeCertificateCreate = () => {
           title={
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Icon
-                onClick={() => router.push('/college-certificate')}
+                onClick={() => router.back}
                 icon='ic:baseline-arrow-back'
                 style={{ marginRight: '8px', fontSize: '24px', cursor: 'pointer' }}
               />
@@ -90,7 +126,7 @@ const CollegeCertificateCreate = () => {
                   </Typography>
                   <Grid style={{ marginTop: '10px' }}>
                     <Autocomplete
-                      options={[]}
+                      options={tipeSurat ?? []}
                       getOptionLabel={(option: any) => option.label}
                       value={watch('tipe')}
                       onChange={(e: any, value: any) => {
@@ -115,6 +151,40 @@ const CollegeCertificateCreate = () => {
                       placeholder='Deskripsi Keperluan'
                       value={watch('description')}
                       onChange={e => setValue('description', e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
+                    Upload Berkas
+                  </Typography>
+                  <Grid style={{ marginTop: '10px' }}>
+                    <Box
+                      sx={{
+                        mb: -2,
+                        ml: 2,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <InputLabel
+                        sx={{
+                          px: 2,
+                          position: 'relative',
+                          fontSize: '12px',
+                          background: '#ffffff',
+                          zIndex: 2
+                        }}
+                      >
+                        File
+                      </InputLabel>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      type='file'
+                      inputProps={{ accept: 'application/pdf' }}
+                      onChange={(e: any) => handleChangeFile(e)}
                     />
                   </Grid>
                 </Grid>
@@ -170,6 +240,7 @@ const CollegeCertificateCreate = () => {
               variant='contained'
               disabled={isLoading}
               sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
+              onClick={handleSubmit(handleCreate)}
             >
               Simpan
             </Button>
