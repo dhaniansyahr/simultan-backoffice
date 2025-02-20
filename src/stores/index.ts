@@ -5,6 +5,7 @@ import acl from 'src/stores/acl/aclSlice'
 import users from 'src/stores/user/userSlice'
 import collegeCertificate from 'src/stores/college-certificate/collegeCertificateSlice'
 import temporaryLeaveRequest from 'src/stores/temporary-leave-request/temporaryLeaveRequestSlice'
+import yudisiumRequest from 'src/stores/yudisium-request/yudisiumRequestSlice'
 
 export const store = configureStore({
   reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore({
     acl,
     users,
     collegeCertificate,
-    temporaryLeaveRequest
+    temporaryLeaveRequest,
+    yudisiumRequest
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
