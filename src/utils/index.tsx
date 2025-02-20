@@ -35,3 +35,14 @@ export const checkFileType = (file: string) => {
 
   return fileType
 }
+
+export function formatString(str: string): string {
+  if (!str) return '-'
+
+  return str
+    .split('_')
+    .filter(word => word)
+    .map(word => word.charAt(0).toUpperCase() + word.toLowerCase().slice(1))
+    .join(' ')
+    .trim()
+}

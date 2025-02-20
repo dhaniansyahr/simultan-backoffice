@@ -4,13 +4,15 @@ import auth from 'src/stores/auth/authSlice'
 import acl from 'src/stores/acl/aclSlice'
 import users from 'src/stores/user/userSlice'
 import collegeCertificate from 'src/stores/college-certificate/collegeCertificateSlice'
+import temporaryLeaveRequest from 'src/stores/temporary-leave-request/temporaryLeaveRequestSlice'
 
 export const store = configureStore({
   reducer: {
     auth,
     acl,
     users,
-    collegeCertificate
+    collegeCertificate,
+    temporaryLeaveRequest
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

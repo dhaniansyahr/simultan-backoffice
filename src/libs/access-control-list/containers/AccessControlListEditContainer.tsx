@@ -156,9 +156,11 @@ const AccessControlListEditContainer = () => {
     setIsLoading(true)
     toast.loading('Loading...')
 
+    const filteredAcl = body?.acl?.filter((item: any) => item.actions && item.actions.length > 0)
+
     const mappedBody: any = {
       userLevelId: body.userLevelId,
-      acl: body?.acl?.map((item: any) => ({
+      acl: filteredAcl?.map((item: any) => ({
         featureName: item.feature,
         actions: item.actions
       }))

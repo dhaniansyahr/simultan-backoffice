@@ -207,11 +207,11 @@ export default function UserManagementTable() {
           }
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {checkAccess('USER_SETTING', 'CREATE') && (
-                <Button variant='contained' color='primary' sx={{ mb: 2 }} onClick={() => setIsAddDialogOpen(true)}>
-                  Tambah User
-                </Button>
-              )}
+              {/* {checkAccess('USER_SETTING', 'CREATE') && ( */}
+              <Button variant='contained' color='primary' sx={{ mb: 2 }} onClick={() => setIsAddDialogOpen(true)}>
+                Tambah User
+              </Button>
+              {/* )} */}
             </Box>
           }
           sx={{

@@ -4,33 +4,32 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Chip,
   CircularProgress,
   IconButton,
-  TextField,
-  Typography,
-  debounce
+  Typography
 } from '@mui/material'
 import { DataGrid, gridClasses } from '@mui/x-data-grid'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useDispatch } from 'react-redux'
 import { Icon } from '@iconify/react'
 import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import {
-  getAllCollegeCertificate,
-  printCollegeCertificate
-} from 'src/stores/college-certificate/collegeCertificateAction'
 import { checkAccess } from 'src/utils/checkAccess'
 import moment from 'moment'
-import VerificationCollegeCertificateDialog from '../dialogs/VerificationCollegeCertificateDialog'
+import VerificationCollegeCertificateDialog from '../dialogs/VerificationDialog'
+import { getAllTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
+import { AppDispatch, RootState } from 'src/stores'
+import { formatString } from 'src/utils'
+import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 
-export default function CollegeCertificateTable() {
-  const dispatch = useDispatch()
+export default function TemporaryLeaveRequestTable() {
+  const dispatch: AppDispatch = useDispatch()
   const router = useRouter()
 
-  const { refresher } = useSelector((state: any) => state.collegeCertificate)
+  const { refresher } = useSelector((state: RootState) => state.temporaryLeaveRequest)
 
   const [data, setData] = useState<any>(null)
 
@@ -55,21 +54,11 @@ export default function CollegeCertificateTable() {
     {
       flex: 0.25,
       field: 'daftar pengajuan',
-      headerName: 'Tipe Surat Pengajuan',
+      headerName: 'Daftar Pengajuan',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.type ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.statusHistory?.[0]?.action ?? '-'}</span>
+        return <span>Diajukan Oleh {params?.row?.offerBy?.Mahasiswa?.name ?? '-'}</span>
       }
     },
     {
@@ -84,32 +73,42 @@ export default function CollegeCertificateTable() {
     },
     {
       flex: 0.25,
-      field: 'disetujui oleh',
-      headerName: 'Disetujui Oleh',
+      field: 'reason',
+      headerName: 'Alasan',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.approvedBy?.fulname ?? '-'}</span>
+        return <span>{params?.row?.reason ?? '-'}</span>
       }
     },
     {
       flex: 0.25,
-      field: 'menunggu persetujuan oleh',
-      headerName: 'Menunggu Persetujuan Oleh',
+      field: 'status',
+      headerName: 'Status',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.remainingApproved?.fullname ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'ditolak oleh',
-      headerName: 'Ditolak Oleh',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.rejectedBy?.fullname ?? '-'}</span>
+        return (
+          <span>
+            <Chip
+              label={formatString(params?.row?.statusHistory?.[0]?.action ?? '-')}
+              sx={{
+                backgroundColor: theme =>
+                  params?.row?.statusHistory?.[0]?.action === 'SEDANG_DIPROSES'
+                    ? hexToRGBA(theme.palette.warning.main, 0.12)
+                    : params?.row?.statusHistory?.[0]?.action === 'DISETUJUI'
+                    ? hexToRGBA(theme.palette.success.main, 0.12)
+                    : hexToRGBA(theme.palette.error.main, 0.12),
+                color: theme =>
+                  params?.row?.statusHistory?.[0]?.action === 'SEDANG_DIPROSES'
+                    ? theme.palette.warning.main
+                    : params?.row?.statusHistory?.[0]?.action === 'DISETUJUI'
+                    ? theme.palette.success.main
+                    : theme.palette.error.main
+              }}
+            />
+          </span>
+        )
       }
     },
     {
@@ -126,7 +125,7 @@ export default function CollegeCertificateTable() {
               gap: 2
             }}
           >
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'UPDATE') && (
+            {checkAccess('CUTI_SEMENTARA', 'UPDATE') && (
               <IconButton
                 id={params?.row?.id}
                 onClick={() => {
@@ -138,7 +137,13 @@ export default function CollegeCertificateTable() {
               </IconButton>
             )}
 
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'VERIFICATION') && (
+            {checkAccess('CUTI_SEMENTARA', 'VIEW') && (
+              <IconButton id={params?.row?.id}>
+                <Icon icon='ph:eye' />
+              </IconButton>
+            )}
+
+            {checkAccess('CUTI_SEMENTARA', 'VERIFICATION') && (
               <Button
                 size='small'
                 color='primary'
@@ -152,7 +157,7 @@ export default function CollegeCertificateTable() {
               </Button>
             )}
 
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'EXPORT') && (
+            {checkAccess('CUTI_SEMENTARA', 'EXPORT') && (
               <Button
                 size='small'
                 color='primary'
@@ -179,7 +184,7 @@ export default function CollegeCertificateTable() {
     } as any
 
     // @ts-ignore
-    await dispatch(getAllCollegeCertificate({ data: body })).then((res: any) => {
+    await dispatch(getAllTemporaryLeaveRequest({ data: body })).then((res: any) => {
       if (
         !(res.payload.content?.entries ?? []).some((obj: any) =>
           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
@@ -244,7 +249,7 @@ export default function CollegeCertificateTable() {
           title={
             <Box>
               <Typography variant='h6' sx={{ fontWeight: 500 }}>
-                Surat Keterangan Kuliah
+                Cuti Sementara
               </Typography>
             </Box>
           }
@@ -256,26 +261,17 @@ export default function CollegeCertificateTable() {
           }}
         />
         <CardHeader
-          title={
-            <Box display={'flex'} flexWrap={'wrap'} gap={'12px'} sx={{ mb: { xs: 8, md: 0 } }}>
-              {/* <TextField
-                size='small'
-                placeholder='Cari Status'
-                onChange={(e: any) => handleSearch(e.target.value)}
-                sx={{ maxWidth: 200 }}
-              /> */}
-            </Box>
-          }
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {checkAccess('SURAT_KETERANGAN_KULIAH', 'CREATE') && (
+              {checkAccess('CUTI_SEMENTARA', 'CREATE') && (
                 <Button
                   variant='contained'
                   color='primary'
                   sx={{ mb: 2 }}
-                  onClick={() => router.push('/college-certificate/create')}
+                  startIcon={<Icon icon='ic:baseline-add' />}
+                  onClick={() => router.push('/temporary-leave-request/create')}
                 >
-                  Buat Surat Keterangan Kuliah
+                  Pengajuan Cuti
                 </Button>
               )}
             </Box>

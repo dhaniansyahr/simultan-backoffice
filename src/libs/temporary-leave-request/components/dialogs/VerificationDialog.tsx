@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Autocomplete, DialogTitle, InputAdornment, OutlinedInput, Switch, TextField } from '@mui/material'
+import { DialogTitle } from '@mui/material'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -13,14 +13,13 @@ import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { useAuth } from 'src/hooks/useAuth'
-import { VerificationSuratPayload } from '../../consts/payload'
+import { VerificationCutiPayload } from '../../consts/payload'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
-import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
 import RejectVerificationDialog from './RejectVerificationDialog'
 import { setRefresher } from 'src/stores/college-certificate/collegeCertificateSlice'
+import { verificationTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -35,10 +34,10 @@ interface VerificatioDialogProps {
   values: any
 }
 
-const VerificationCollegeCertificateDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
+const VerificationDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
   const dispatch: AppDispatch = useDispatch()
-  const { user } = useAuth()
-  const { watch, setValue, handleSubmit, reset } = useForm()
+
+  const { handleSubmit, reset } = useForm()
 
   const [isReject, setIsReject] = useState<boolean>(false)
 
@@ -53,18 +52,17 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (value: any, action: 'DITOLAK' | 'DISETUJUI') => {
+  const handleVerification = async (value: any, action: 'USULAN_DITOLAK' | 'USULAN_DISETUJUI') => {
     setIsLoading(true)
     toast.loading('Verification...')
 
-    const body: VerificationSuratPayload = {
+    const body: VerificationCutiPayload = {
       action: action,
-      reason: value?.reason,
       noSurat: value?.noSurat
     }
 
     // @ts-ignore
-    await dispatch(verificationCollegeCertificate({ data: body, id: values?.id })).then(res => {
+    await dispatch(verificationTemporaryLeaveRequest({ data: body, id: values?.id })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -140,10 +138,10 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
             </Grid>
             <Grid item xs={12}>
               <Typography variant='h5' align='center'>
-                Apakah anda ingin melakukan verifikasi pada surat ini?
+                Apakah anda ingin melakukan verifikasi pada pengajuan cuti ini?
               </Typography>
             </Grid>
-            {user?.UserLevel?.name === 'KASUBBAG_KEMAHASISWAAN' && (
+            {/* {user?.UserLevel?.name === 'KASUBBAG_KEMAHASISWAAN' && (
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -156,7 +154,7 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
                   }}
                 />
               </Grid>
-            )}
+            )} */}
           </Grid>
         </DialogContent>
         <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>
@@ -176,7 +174,7 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
             color='success'
             disabled={isLoading}
             sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={handleSubmit(value => handleVerification(value, 'DISETUJUI'))}
+            onClick={handleSubmit(value => handleVerification(value, 'USULAN_DISETUJUI'))}
           >
             Verifikasi
           </Button>
@@ -192,4 +190,4 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
   )
 }
 
-export default VerificationCollegeCertificateDialog
+export default VerificationDialog

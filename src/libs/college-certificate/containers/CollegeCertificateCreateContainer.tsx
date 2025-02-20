@@ -60,7 +60,8 @@ const CollegeCertificateCreate = () => {
 
     const body: any = {
       type: value?.tipe?.value,
-      fileUrl: fileSelected[0]?.previewUrl
+      fileUrl: fileSelected[0]?.previewUrl,
+      description: value?.description
     }
 
     // @ts-ignore
@@ -122,7 +123,7 @@ const CollegeCertificateCreate = () => {
               <Grid container spacing={4} direction='column'>
                 <Grid item xs={6}>
                   <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
-                    Tipe Surat Keterangan
+                    Tipe Berkas yang diupload
                   </Typography>
                   <Grid style={{ marginTop: '10px' }}>
                     <Autocomplete
