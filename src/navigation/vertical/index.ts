@@ -11,6 +11,10 @@ const navigation = (): VerticalNavItemsType => {
       title: 'Permohonan Cuti Sementara',
       path: '/temporary-leave-request'
     },
+    {
+      title: 'Pengajuan Yudisium',
+      path: '/yudisium-request'
+    },
 
     // {
     //   title: 'Permohonan Aktif Kembali',
