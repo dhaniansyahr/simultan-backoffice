@@ -23,6 +23,7 @@ import toast from 'react-hot-toast'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 import themeConfig from 'src/configs/themeConfig'
 import { useAuth } from 'src/hooks/useAuth'
+import { LoginParams } from 'src/context/types'
 
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: 450 }
@@ -38,7 +39,7 @@ const Login = () => {
   const handleLogin = async (value: any) => {
     setIsLoading(true)
 
-    const body: any = Object.assign({}, value)
+    const body: LoginParams = Object.assign({}, value)
 
     auth.login(body, (err: any) => {
       toast.dismiss()
@@ -76,11 +77,11 @@ const Login = () => {
               autoFocus
               fullWidth
               id='email'
-              label='Email'
+              label='NIP/NPM'
               sx={{ mb: 4 }}
-              value={watch('email')}
+              value={watch('identityNumber')}
               onChange={e => {
-                setValue('email', e.target.value)
+                setValue('identityNumber', e.target.value)
               }}
             />
             <FormControl fullWidth>

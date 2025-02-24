@@ -4,24 +4,30 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Chip,
   CircularProgress,
   IconButton,
-  TextField,
-  Typography,
-  debounce
+  Typography
 } from '@mui/material'
 import { DataGrid, gridClasses } from '@mui/x-data-grid'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useDispatch } from 'react-redux'
-import { Icon } from '@iconify/react'
 import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import { getAllCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import {
+  getAllCollegeCertificate,
+  printCollegeCertificate
+} from 'src/stores/college-certificate/collegeCertificateAction'
 import { checkAccess } from 'src/utils/checkAccess'
 import moment from 'moment'
 import VerificationCollegeCertificateDialog from '../dialogs/VerificationCollegeCertificateDialog'
+import InputNomorSuratDialog from '../dialogs/InputNomorSuratDialog'
+import { formatString, getStatus } from 'src/utils'
+import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
+import { Icon } from '@iconify/react'
+import DialogDetail from '../dialogs/DialogDetail'
 
 export default function CollegeCertificateTable() {
   const dispatch = useDispatch()
@@ -37,6 +43,8 @@ export default function CollegeCertificateTable() {
 
   const [itemSelected, setItemSelected] = useState<any>(null)
   const [isDialogVerificationOpen, setIsDialogVerificationOpen] = useState<boolean>(false)
+  const [isDialogInputNomorSuratOpen, setIsDialogInputNomorSuratOpen] = useState<boolean>(false)
+  const [isDialogDetailOpen, setIsDialogDetailOpen] = useState<boolean>(false)
 
   const columns = [
     {
@@ -51,22 +59,22 @@ export default function CollegeCertificateTable() {
     },
     {
       flex: 0.25,
+      field: 'pengajuanOleh',
+      headerName: 'Daftar Pengajuan',
+      minWidth: 260,
+      sortable: false,
+      renderCell: (params: any) => {
+        return <span>Pengajuan Oleh {params?.row?.user?.nama ?? '-'}</span>
+      }
+    },
+    {
+      flex: 0.25,
       field: 'daftar pengajuan',
       headerName: 'Tipe Surat Pengajuan',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.type ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.status ?? '-'}</span>
+        return <span>{params?.row?.tipeSurat ?? '-'}</span>
       }
     },
     {
@@ -81,41 +89,55 @@ export default function CollegeCertificateTable() {
     },
     {
       flex: 0.25,
-      field: 'disetujui oleh',
-      headerName: 'Disetujui Oleh',
-      minWidth: 160,
+      field: 'deskripsi',
+      headerName: 'Deskripsi',
+      minWidth: 260,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.approvedBy?.fulname ?? '-'}</span>
+        return <span>{params?.row?.deskripsi ?? '-'}</span>
       }
     },
     {
       flex: 0.25,
-      field: 'menunggu persetujuan oleh',
-      headerName: 'Menunggu Persetujuan Oleh',
-      minWidth: 160,
+      field: 'status',
+      headerName: 'Status',
+      minWidth: 260,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.remainingApproved?.fullname ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'ditolak oleh',
-      headerName: 'Ditolak Oleh',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.rejectedBy?.fullname ?? '-'}</span>
+        const status = getStatus(params?.row?.verifikasiStatus ?? '-')
+
+        return (
+          <span>
+            <Chip
+              label={formatString(params?.row?.verifikasiStatus ?? '-')}
+              sx={{
+                backgroundColor: theme =>
+                  status === 'DIPROSES'
+                    ? hexToRGBA(theme.palette.warning.main, 0.12)
+                    : status === 'DISETUJUI'
+                    ? hexToRGBA(theme.palette.success.main, 0.12)
+                    : hexToRGBA(theme.palette.error.main, 0.12),
+                color: theme =>
+                  status === 'DIPROSES'
+                    ? theme.palette.warning.main
+                    : status === 'DISETUJUI'
+                    ? theme.palette.success.main
+                    : theme.palette.error.main
+              }}
+            />
+          </span>
+        )
       }
     },
     {
       flex: 0.25,
       field: 'action',
       headerName: 'ACTION',
-      minWidth: 260,
+      minWidth: 360,
       sortable: false,
       renderCell: (params: any) => {
+        const status = params?.row?.status?.find((item: any) => item.nama === 'SURAT_DIPROSES')
+
         return (
           <div
             style={{
@@ -123,41 +145,58 @@ export default function CollegeCertificateTable() {
               gap: 2
             }}
           >
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'UPDATE') && (
+            {checkAccess('SURAT_KETERANGAN_KULIAH', 'VIEW') && (
               <IconButton
                 id={params?.row?.id}
                 onClick={() => {
-                  router.push('/college-certificate/edit')
-                  setItemSelected(params.row)
+                  setItemSelected(params?.row)
+                  setIsDialogDetailOpen(true)
                 }}
               >
-                <Icon icon='mdi:pencil-outline' />
-              </IconButton>
-            )}
-
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'DELETE') && (
-              <IconButton
-                id={params?.row?.id}
-
-                // onClick={() => {
-                //   router.push('/college-certificate/edit')
-                //   setItemSelected(params.row)
-                // }}
-              >
-                <Icon icon='mdi:trash' />
+                <Icon icon='ph:eye' />
               </IconButton>
             )}
 
             {checkAccess('SURAT_KETERANGAN_KULIAH', 'VERIFICATION') && (
-              <Button
-                size='small'
-                color='primary'
-                variant='contained'
-                onClick={() => setIsDialogVerificationOpen(true)}
-              >
-                Verifikasi
-              </Button>
+              <Box display='flex' gap={2}>
+                <Button
+                  size='small'
+                  color='primary'
+                  variant='contained'
+                  onClick={() => {
+                    setIsDialogVerificationOpen(true)
+                    setItemSelected(params.row)
+                  }}
+                >
+                  Verifikasi
+                </Button>
+                {status && (
+                  <Button
+                    size='small'
+                    color='info'
+                    variant='contained'
+                    onClick={() => {
+                      setIsDialogInputNomorSuratOpen(true)
+                      setItemSelected(params.row)
+                    }}
+                  >
+                    Input Nomor Surat
+                  </Button>
+                )}
+              </Box>
             )}
+
+            {checkAccess('SURAT_KETERANGAN_KULIAH', 'EXPORT') &&
+              params?.row?.verifikasiStatus === 'USEULAN_DISETUJUI' && (
+                <Button
+                  size='small'
+                  color='primary'
+                  variant='contained'
+                  onClick={() => handlePrintSurat(params?.row?.ulid)}
+                >
+                  Print
+                </Button>
+              )}
           </div>
         )
       }
@@ -194,6 +233,23 @@ export default function CollegeCertificateTable() {
     })
 
     setIsLoading(false)
+  }
+
+  const handlePrintSurat = async (id: string) => {
+    toast.loading('Printing...')
+
+    // @ts-ignore
+    await dispatch(printCollegeCertificate({ data: {}, id: id })).then(res => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.dismiss()
+        toast.error(res?.payloda?.response?.data?.message)
+
+        return
+      }
+
+      toast.dismiss()
+      toast.success(res?.payload?.message)
+    })
   }
 
   // const handleSearch = useCallback(
@@ -234,16 +290,6 @@ export default function CollegeCertificateTable() {
           }}
         />
         <CardHeader
-          title={
-            <Box display={'flex'} flexWrap={'wrap'} gap={'12px'} sx={{ mb: { xs: 8, md: 0 } }}>
-              {/* <TextField
-                size='small'
-                placeholder='Cari Status'
-                onChange={(e: any) => handleSearch(e.target.value)}
-                sx={{ maxWidth: 200 }}
-              /> */}
-            </Box>
-          }
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
               {checkAccess('SURAT_KETERANGAN_KULIAH', 'CREATE') && (
@@ -251,9 +297,10 @@ export default function CollegeCertificateTable() {
                   variant='contained'
                   color='primary'
                   sx={{ mb: 2 }}
+                  startIcon={<Icon icon='ic:baseline-add' />}
                   onClick={() => router.push('/college-certificate/create')}
                 >
-                  Buat Surat Keterangan Kuliah
+                  Buat Pengajuan
                 </Button>
               )}
             </Box>
@@ -299,6 +346,19 @@ export default function CollegeCertificateTable() {
       <VerificationCollegeCertificateDialog
         open={isDialogVerificationOpen}
         onClose={(v: boolean) => setIsDialogVerificationOpen(v)}
+        values={itemSelected}
+      />
+
+      <InputNomorSuratDialog
+        open={isDialogInputNomorSuratOpen}
+        onClose={(v: boolean) => setIsDialogInputNomorSuratOpen(v)}
+        values={itemSelected}
+      />
+
+      <DialogDetail
+        open={isDialogDetailOpen}
+        onClose={(v: boolean) => setIsDialogDetailOpen(v)}
+        values={itemSelected}
       />
     </>
   )

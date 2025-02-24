@@ -55,7 +55,6 @@ import 'src/iconify-bundle/icons-bundle-react'
 
 // ** Global css styles
 import '../../styles/globals.css'
-import AclContext from 'src/context/AclContext'
 import { Provider } from 'react-redux'
 import { store } from 'src/stores'
 
@@ -134,7 +133,9 @@ const App = (props: ExtendedAppProps) => {
                   <ThemeComponent settings={settings}>
                     <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
-                        <AclContext fallback={<Spinner />}>{getLayout(<Component {...pageProps} />)}</AclContext>
+                        {/* <AclContext> */}
+                        {getLayout(<Component {...pageProps} />)}
+                        {/* </AclContext> */}
                       </AclGuard>
                     </Guard>
                     <ReactHotToast>

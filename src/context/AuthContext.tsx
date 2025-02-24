@@ -12,6 +12,9 @@ import authConfig from 'src/configs/auth'
 // ** Types
 import api from 'src/service/api'
 import { AuthValuesType, ErrCallbackType, LoginParams, UserDataType } from './types'
+import { AppDispatch } from 'src/stores'
+import { useDispatch } from 'react-redux'
+import { setAclRoles } from 'src/stores/acl/aclSlice'
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -29,7 +32,11 @@ type Props = {
   children: ReactNode
 }
 
+const actionsMap = ['CREATE', 'VIEW', 'EXPORT', 'VERIFICATION']
+
 const AuthProvider = ({ children }: Props) => {
+  const dispatch: AppDispatch = useDispatch()
+
   // ** States
   const [user, setUser] = useState<UserDataType | null>(defaultProvider.user)
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading)
@@ -52,9 +59,6 @@ const AuthProvider = ({ children }: Props) => {
 
             setLoading(false)
             setUser(JSON.parse(localStorage.getItem('userData')!))
-
-            // setUser({ ...response.data.content?.payload })
-            // localStorage.setItem('userData', JSON.stringify(response.data.content?.payload))
           })
           .catch(() => {
             localStorage.removeItem('userData')
@@ -69,22 +73,76 @@ const AuthProvider = ({ children }: Props) => {
     }
 
     initAuth()
-  }, [router])
+  }, [])
 
   const handleLogin = (params: LoginParams, errorCallback?: ErrCallbackType) => {
     api
       .post(authConfig.loginEndpoint, params)
       .then(async response => {
         window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.content?.token)
+        window.localStorage.setItem(authConfig.onTokenExpiration, response.data.content?.refreshToken)
 
-        setUser({ ...response.data.content?.user, role: 'ADMIN' })
+        setUser({
+          id: response?.data?.content?.user?.id,
+          nama: response.data.content?.user?.nama,
+          nomorIdentitas: response.data.content?.user?.npm,
+          role: response.data.content?.user?.aksesLevel?.name ?? 'ADMIN',
+          aksesLevelId: response.data.content?.user?.aksesLevelId
+        })
         await window.localStorage.setItem(
           'userData',
           JSON.stringify({
-            ...response.data.content?.user,
-            role: response.data.content?.user?.UserLevel?.name ?? 'ADMIN'
+            id: response?.data?.content?.user?.id,
+            nama: response.data.content?.user?.nama,
+            nomorIdentitas: response.data.content?.user?.npm,
+            role: response.data.content?.user?.aksesLevel?.name ?? 'ADMIN',
+            aksesLevelId: response.data.content?.user?.aksesLevelId
           })
         )
+
+        await api
+          .get(`/acl/${response.data.content?.user?.aksesLevelId}`, {
+            headers: {
+              Authorization: `Bearer ${response.data.content?.token}`
+            }
+          })
+          .then(res => {
+            const data = res?.data?.content
+
+            const mappedData = data?.reduce((acc: any, item: any) => {
+              acc[item.feature] = actionsMap.reduce((actionAcc: any, action: string) => {
+                actionAcc[action] = item.actions.includes(action)
+
+                return actionAcc
+              }, {})
+
+              // If actions array is empty, set all actions to false
+              if (item.actions.length === 0) {
+                actionsMap.forEach(action => {
+                  acc[item.feature][action] = false
+                })
+              }
+
+              return acc
+            }, {})
+
+            dispatch(setAclRoles(mappedData))
+          })
+
+        await api
+          .get(`/acl/menu/${response.data.content?.user?.aksesLevelId}`, {
+            headers: {
+              Authorization: `Bearer ${response.data.content?.token}`
+            }
+          })
+          .then(res => {
+            const data = res.data?.content?.map((item: any) => ({
+              title: item?.title,
+              path: item?.path
+            }))
+
+            window.localStorage.setItem('menuRole', JSON.stringify(data))
+          })
       })
       .then(() => {
         api
@@ -99,9 +157,6 @@ const AuthProvider = ({ children }: Props) => {
             )}`
             api.defaults.headers.common['Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-            // setUser({ ...response.data.content?.payload })
-            // localStorage.setItem('userData', JSON.stringify(response.data.content?.payload))
-
             const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
 
             window.location.href = redirectURL as string
@@ -115,7 +170,10 @@ const AuthProvider = ({ children }: Props) => {
   const handleLogout = () => {
     setUser(null)
     window.localStorage.removeItem('userData')
+    window.localStorage.removeItem('aclRoles')
+    window.localStorage.removeItem('menuRole')
     window.localStorage.removeItem(authConfig.storageTokenKeyName)
+    window.localStorage.removeItem(authConfig.onTokenExpiration)
     router.push('/login')
   }
 

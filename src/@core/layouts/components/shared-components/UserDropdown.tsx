@@ -61,20 +61,20 @@ const UserDropdown = (props: Props) => {
     setAnchorEl(null)
   }
 
-  const styles = {
-    py: 2,
-    px: 4,
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    color: 'text.primary',
-    textDecoration: 'none',
-    '& svg': {
-      mr: 2,
-      fontSize: '1.375rem',
-      color: 'text.primary'
-    }
-  }
+  // const styles = {
+  //   py: 2,
+  //   px: 4,
+  //   width: '100%',
+  //   display: 'flex',
+  //   alignItems: 'center',
+  //   color: 'text.primary',
+  //   textDecoration: 'none',
+  //   '& svg': {
+  //     mr: 2,
+  //     fontSize: '1.375rem',
+  //     color: 'text.primary'
+  //   }
+  // }
 
   const handleLogout = () => {
     logout()
@@ -94,7 +94,7 @@ const UserDropdown = (props: Props) => {
         }}
       >
         <Avatar
-          alt={user?.fullName}
+          alt={user?.nama}
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
           src='/images/avatars/1.png'
@@ -118,10 +118,15 @@ const UserDropdown = (props: Props) => {
                 horizontal: 'right'
               }}
             >
-              <Avatar alt={user?.fullName} src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
+              <Avatar alt={user?.nama} src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
             </Badge>
             <Box sx={{ display: 'flex', ml: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>{user?.fullName}</Typography>
+              <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                {user?.nama}
+              </Typography>
+              <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                {user?.nomorIdentitas}
+              </Typography>
               {user?.role && (
                 <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
                   {user?.role}

@@ -23,44 +23,44 @@ import toast from 'react-hot-toast'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { useDispatch } from 'react-redux'
 import { createCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
-import { uploadToStorage } from 'src/stores/storage/storageAction'
 import { tipeSurat } from '../consts'
 
 const CollegeCertificateCreate = () => {
   const dispatch = useDispatch()
   const router = useRouter()
 
-  const { watch, setValue, handleSubmit, reset } = useForm()
+  const { watch, setValue, handleSubmit } = useForm()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [fileSelected, setFileSelected] = useState<any>(null)
 
-  const handleFileUpload = async (file: any) => {
-    const body: any = {
-      part: 'BOOTCAMP',
-      files: file
-    }
+  // const handleFileUpload = async (file: any) => {
+  //   const body: any = {
+  //     part: 'BOOTCAMP',
+  //     files: file
+  //   }
 
-    // @ts-ignore
-    const res: any = await dispatch(uploadToStorage({ data: body }))
+  //   // @ts-ignore
+  //   const res: any = await dispatch(uploadToStorage({ data: body }))
 
-    if (res?.meta?.requestStatus !== 'fulfilled') {
-      setIsLoading(false)
-      toast.error(res?.payload?.response?.message)
+  //   if (res?.meta?.requestStatus !== 'fulfilled') {
+  //     setIsLoading(false)
+  //     toast.error(res?.payload?.response?.message)
 
-      return
-    }
+  //     return
+  //   }
 
-    return res.payload?.data
-  }
+  //   return res.payload?.data
+  // }
 
-  const handleCreate = async (value: any, id: any) => {
+  const handleCreate = async (value: any) => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
     const body: any = {
-      type: value?.tipe?.value,
-      fileUrl: fileSelected[0]?.previewUrl
+      tipeSurat: value?.tipe?.value,
+      dokumenUrl: fileSelected[0]?.previewUrl,
+      deskripsi: value?.description
     }
 
     // @ts-ignore
@@ -122,7 +122,7 @@ const CollegeCertificateCreate = () => {
               <Grid container spacing={4} direction='column'>
                 <Grid item xs={6}>
                   <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
-                    Tipe Surat Keterangan
+                    Tipe Berkas yang diupload
                   </Typography>
                   <Grid style={{ marginTop: '10px' }}>
                     <Autocomplete
