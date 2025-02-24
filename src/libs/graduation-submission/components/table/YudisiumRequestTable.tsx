@@ -4,33 +4,32 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Chip,
   CircularProgress,
   IconButton,
-  TextField,
-  Typography,
-  debounce
+  Typography
 } from '@mui/material'
 import { DataGrid, gridClasses } from '@mui/x-data-grid'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useDispatch } from 'react-redux'
 import { Icon } from '@iconify/react'
 import { useSelector } from 'react-redux'
-import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import {
-  getAllCollegeCertificate,
-  printCollegeCertificate
-} from 'src/stores/college-certificate/collegeCertificateAction'
 import { checkAccess } from 'src/utils/checkAccess'
 import moment from 'moment'
 import VerificationYudisiumRequestDialog from '../dialogs/VerificationYudisumRequestDialog'
+import { RootState } from 'src/stores'
+import { getAllGraduationSubmission } from 'src/stores/graduation-submission/graduationSubmissionAction'
+import { formatString, getStatus } from 'src/utils'
+import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
+import DialogDetail from '../dialogs/DialogDetail'
 
 export default function YudisiumRequestTable() {
   const dispatch = useDispatch()
   const router = useRouter()
 
-  const { refresher } = useSelector((state: any) => state.collegeCertificate)
+  const { refresher } = useSelector((state: RootState) => state.graduationSubmission)
 
   const [data, setData] = useState<any>(null)
 
@@ -40,6 +39,7 @@ export default function YudisiumRequestTable() {
 
   const [itemSelected, setItemSelected] = useState<any>(null)
   const [isDialogVerificationOpen, setIsDialogVerificationOpen] = useState<boolean>(false)
+  const [isDialogDetailOpen, setIsDialogDetailOpen] = useState<boolean>(false)
 
   const columns = [
     {
@@ -55,21 +55,11 @@ export default function YudisiumRequestTable() {
     {
       flex: 0.25,
       field: 'daftar pengajuan',
-      headerName: 'Tipe Surat Pengajuan',
+      headerName: 'Daftar Pengajuan',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.type ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'status',
-      headerName: 'Status',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.statusHistory?.[0]?.action ?? '-'}</span>
+        return <span>Diajukan Oleh {params?.row?.user?.nama ?? '-'}</span>
       }
     },
     {
@@ -84,32 +74,34 @@ export default function YudisiumRequestTable() {
     },
     {
       flex: 0.25,
-      field: 'disetujui oleh',
-      headerName: 'Disetujui Oleh',
+      field: 'status',
+      headerName: 'Status',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        return <span>{params?.row?.approvedBy?.fulname ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'menunggu persetujuan oleh',
-      headerName: 'Menunggu Persetujuan Oleh',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.remainingApproved?.fullname ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
-      field: 'ditolak oleh',
-      headerName: 'Ditolak Oleh',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.rejectedBy?.fullname ?? '-'}</span>
+        const status = getStatus(params?.row?.verifikasiStatus ?? '-')
+
+        return (
+          <span>
+            <Chip
+              label={formatString(params?.row?.verifikasiStatus ?? '-')}
+              sx={{
+                backgroundColor: theme =>
+                  status === 'DIPROSES'
+                    ? hexToRGBA(theme.palette.warning.main, 0.12)
+                    : status === 'DISETUJUI'
+                    ? hexToRGBA(theme.palette.success.main, 0.12)
+                    : hexToRGBA(theme.palette.error.main, 0.12),
+                color: theme =>
+                  status === 'DIPROSES'
+                    ? theme.palette.warning.main
+                    : status === 'DISETUJUI'
+                    ? theme.palette.success.main
+                    : theme.palette.error.main
+              }}
+            />
+          </span>
+        )
       }
     },
     {
@@ -126,19 +118,19 @@ export default function YudisiumRequestTable() {
               gap: 2
             }}
           >
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'UPDATE') && (
+            {checkAccess('PENGAJUAN_YUDISIUM', 'VIEW') && (
               <IconButton
                 id={params?.row?.id}
                 onClick={() => {
-                  router.push('/college-certificate/edit')
-                  setItemSelected(params.row)
+                  setItemSelected(params?.row)
+                  setIsDialogDetailOpen(true)
                 }}
               >
-                <Icon icon='mdi:pencil-outline' />
+                <Icon icon='ph:eye' />
               </IconButton>
             )}
 
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'VERIFICATION') && (
+            {checkAccess('PENGAJUAN_YUDISIUM', 'VERIFICATION') && (
               <Button
                 size='small'
                 color='primary'
@@ -151,91 +143,55 @@ export default function YudisiumRequestTable() {
                 Verifikasi
               </Button>
             )}
-
-            {checkAccess('SURAT_KETERANGAN_KULIAH', 'EXPORT') && (
-              <Button
-                size='small'
-                color='primary'
-                variant='contained'
-                onClick={() => handlePrintSurat(params?.row?.id)}
-              >
-                Print
-              </Button>
-            )}
           </div>
         )
       }
     }
   ]
 
-  //   const handleGetAll = async (isPagination = false) => {
-  //     setIsLoading(true)
+  const handleGetAll = async (isPagination = false) => {
+    setIsLoading(true)
 
-  //     const body = {
-  //       params: {
-  //         page: isPagination ? page : 1,
-  //         rows: pageSize
-  //       }
-  //     } as any
-
-  //     // @ts-ignore
-  //     await dispatch(getAllCollegeCertificate({ data: body })).then((res: any) => {
-  //       if (
-  //         !(res.payload.content?.entries ?? []).some((obj: any) =>
-  //           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
-  //         ) &&
-  //         isPagination
-  //       ) {
-  //         const _entries = [...(data?.entries ?? []), ...(res.payload.content?.entries ?? [])]
-  //         setData(Object.assign({}, res.payload.content, { entries: _entries }))
-  //       } else {
-  //         if (!res.payload.content?.entries?.length && res.payload.content?.totalPage === 1) {
-  //           setData(null)
-  //         } else if (!isPagination) {
-  //           setData(res.payload.content)
-  //         }
-  //       }
-  //     })
-
-  //     setIsLoading(false)
-  //   }
-
-  const handlePrintSurat = async (id: string) => {
-    toast.loading('Printing...')
+    const body = {
+      params: {
+        page: isPagination ? page : 1,
+        rows: pageSize
+      }
+    } as any
 
     // @ts-ignore
-    await dispatch(printCollegeCertificate({ data: {}, id: id })).then(res => {
-      console.log('RESPONSE : ', res)
-      if (res?.meta?.requestStatus !== 'fulfilled') {
-        toast.dismiss()
-        toast.error(res?.payloda?.response?.data?.message)
-
-        return
+    await dispatch(getAllGraduationSubmission({ data: body })).then((res: any) => {
+      if (
+        !(res.payload.content?.entries ?? []).some((obj: any) =>
+          (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
+        ) &&
+        isPagination
+      ) {
+        const _entries = [...(data?.entries ?? []), ...(res.payload.content?.entries ?? [])]
+        setData(Object.assign({}, res.payload.content, { entries: _entries }))
+      } else {
+        if (!res.payload.content?.entries?.length && res.payload.content?.totalPage === 1) {
+          setData(null)
+        } else if (!isPagination) {
+          setData(res.payload.content)
+        }
       }
-
-      toast.dismiss()
-      toast.success(res?.payload?.message)
     })
+
+    setIsLoading(false)
   }
 
-  // const handleSearch = useCallback(
-  //   debounce((query: any) => {
-  //     setSearch(query)
-  //   }, 300),
-  //   []
-  // )
+  useEffect(() => {
+    setPage(1)
 
-  //   useEffect(() => {
-  //     setPage(1)
+    handleGetAll(false)
+  }, [refresher])
 
-  //     handleGetAll(false)
-  //   }, [refresher])
-
-  //   useEffect(() => {
-  //     if (page !== 1) {
-  //       handleGetAll(true)
-  //     }
-  //   }, [page, pageSize])
+  useEffect(() => {
+    if (page !== 1) {
+      handleGetAll(true)
+    }
+  }, [page, pageSize])
 
   return (
     <>
@@ -256,26 +212,31 @@ export default function YudisiumRequestTable() {
           }}
         />
         <CardHeader
-          title={
-            <Box display={'flex'} flexWrap={'wrap'} gap={'12px'} sx={{ mb: { xs: 8, md: 0 } }}>
-              {/* <TextField
-                   size='small'
-                   placeholder='Cari Status'
-                   onChange={(e: any) => handleSearch(e.target.value)}
-                   sx={{ maxWidth: 200 }}
-                 /> */}
-            </Box>
-          }
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {checkAccess('SURAT_KETERANGAN_KULIAH', 'CREATE') && (
+              {checkAccess('PENGAJUAN_YUDISIUM', 'CREATE') && (
                 <Button
                   variant='contained'
                   color='primary'
-                  sx={{ mb: 2 }}
-                  onClick={() => router.push('/yudisium-request/create')}
+                  sx={{
+                    padding: { sm: '5px 20px', xs: '5px 15px' },
+                    transition: 'transform 0.2s ease-in-out',
+                    '&:hover': {
+                      animation: 'bounce 0.5s infinite'
+                    },
+                    '@keyframes bounce': {
+                      '0%, 100%': {
+                        transform: 'translateY(0)'
+                      },
+                      '50%': {
+                        transform: 'translateY(-5px)'
+                      }
+                    }
+                  }}
+                  startIcon={<Icon icon='ic:baseline-add' />}
+                  onClick={() => router.push('/graduation-submission/create')}
                 >
-                  Buat Pengajuan Yudisium
+                  Buat Pengajuan
                 </Button>
               )}
             </Box>
@@ -317,9 +278,16 @@ export default function YudisiumRequestTable() {
           />
         </CardContent>
       </Card>
+
       <VerificationYudisiumRequestDialog
         open={isDialogVerificationOpen}
         onClose={(v: boolean) => setIsDialogVerificationOpen(v)}
+        values={itemSelected}
+      />
+
+      <DialogDetail
+        open={isDialogDetailOpen}
+        onClose={(v: boolean) => setIsDialogDetailOpen(v)}
         values={itemSelected}
       />
     </>

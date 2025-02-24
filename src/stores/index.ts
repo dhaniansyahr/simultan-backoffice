@@ -3,9 +3,10 @@ import { configureStore } from '@reduxjs/toolkit'
 import auth from 'src/stores/auth/authSlice'
 import acl from 'src/stores/acl/aclSlice'
 import users from 'src/stores/user/userSlice'
-import collegeCertificate from 'src/stores/college-certificate/collegeCertificateSlice'
+import collegeCertificate from 'src/stores/college-certificate/certificateLegalizationSlice'
 import temporaryLeaveRequest from 'src/stores/temporary-leave-request/temporaryLeaveRequestSlice'
-import yudisiumRequest from 'src/stores/yudisium-request/yudisiumRequestSlice'
+import graduationSubmission from 'src/stores/graduation-submission/graduationSubmissionSlice'
+import certificateLegalization from 'src/stores/certificate-legalization/certificateLegalizationSlice'
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +15,8 @@ export const store = configureStore({
     users,
     collegeCertificate,
     temporaryLeaveRequest,
-    yudisiumRequest
+    graduationSubmission,
+    certificateLegalization
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

@@ -12,72 +12,58 @@ import {
   CardActions,
   InputLabel,
   List,
-  ListItem
+  ListItem,
+  IconButton
 } from '@mui/material'
 import 'react-datepicker/dist/react-datepicker.css'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-
-// import toast from 'react-hot-toast'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { useDispatch } from 'react-redux'
+import { AppDispatch } from 'src/stores'
+import toast from 'react-hot-toast'
+import { createGraduationSubmission } from 'src/stores/graduation-submission/graduationSubmissionAction'
 
-// import { uploadToStorage } from 'src/stores/storage/storageAction'
+const YudisiumRequestCreate = () => {
+  const dispatch: AppDispatch = useDispatch()
+  const router: NextRouter = useRouter()
 
-const YudisiumRequestEdit = () => {
-  const dispatch = useDispatch()
-  const router = useRouter()
-  const { watch, setValue, handleSubmit, reset } = useForm()
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [fileSelected, setFileSelected] = useState<any>(null)
+  const [fileSelected, setFileSelected] = useState<any[]>([])
 
-  //   const handleFileUpload = async (file: any) => {
-  //     const body: any = {
-  //       part: 'BOOTCAMP',
-  //       files: file
-  //     }
+  const handleCreate = async () => {
+    setIsLoading(true)
+    toast.loading('Waiting ...')
 
-  //     // @ts-ignore
-  //     const res: any = await dispatch(uploadToStorage({ data: body }))
+    if (fileSelected?.length === 0) {
+      setIsLoading(false)
+      toast.dismiss()
+      toast.error('Mohon Input Berkas Pengajuan Yudisium, Terlebih Dahulu!')
 
-  //     if (res?.meta?.requestStatus !== 'fulfilled') {
-  //       setIsLoading(false)
-  //       toast.error(res?.payload?.response?.message)
+      return
+    }
 
-  //       return
-  //     }
+    const body: any = {
+      dokumenUrl: fileSelected[0]?.previewUrl
+    }
 
-  //     return res.payload?.data
-  //   }
+    // @ts-ignore
+    await dispatch(createGraduationSubmission({ data: body })).then((res: any) => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        setIsLoading(false)
+        toast.dismiss()
+        toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
 
-  //   const handleCreate = async (value: any, id: any) => {
-  //     setIsLoading(true)
-  //     toast.loading('Waiting ...')
+        return
+      }
 
-  //     const body: any = {
-  //       type: value?.tipe?.value,
-  //       fileUrl: fileSelected[0]?.previewUrl,
-  //       description: value?.description
-  //     }
+      setIsLoading(false)
+      toast.dismiss()
+      toast.success(res?.payload?.message)
 
-  //     // @ts-ignore
-  //     await dispatch(createCollegeCertificate({ data: body })).then((res: any) => {
-  //       if (res?.meta?.requestStatus !== 'fulfilled') {
-  //         setIsLoading(false)
-  //         toast.dismiss()
-  //         toast.error(res?.payload?.response?.data?.errors?.[0]?.message ?? res?.payload?.response?.data?.message)
-
-  //         return
-  //       }
-
-  //       setIsLoading(false)
-  //       toast.dismiss()
-  //       toast.success(res?.payload?.message)
-
-  //       router.back()
-  //     })
-  //   }
+      router.back()
+    })
+  }
 
   const handleChangeFile = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -97,12 +83,18 @@ const YudisiumRequestEdit = () => {
         <CardHeader
           title={
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Icon
-                onClick={() => router.push('/yudisium-request')}
-                icon='ic:baseline-arrow-back'
-                style={{ marginRight: '8px', fontSize: '24px', cursor: 'pointer' }}
-              />
-              <Typography variant='h5'>Edit Surat Pengajuan Yudisium</Typography>
+              <IconButton
+                onClick={() => router.back()}
+                sx={{
+                  '&:hover': {
+                    transform: 'translateX(-5px)',
+                    transition: 'transform 0.2s ease'
+                  }
+                }}
+              >
+                <Icon icon='ic:baseline-arrow-back' />
+              </IconButton>
+              <Typography variant='h5'>Buat Pengajuan Yudisium</Typography>
             </Box>
           }
           sx={{
@@ -217,9 +209,22 @@ const YudisiumRequestEdit = () => {
               type='submit'
               variant='contained'
               disabled={isLoading}
-              sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-
-              //     onClick={handleSubmit(handleCreate)}
+              sx={{
+                padding: { sm: '5px 20px', xs: '5px 15px' },
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  animation: 'bounce 0.5s infinite'
+                },
+                '@keyframes bounce': {
+                  '0%, 100%': {
+                    transform: 'translateY(0)'
+                  },
+                  '50%': {
+                    transform: 'translateY(-5px)'
+                  }
+                }
+              }}
+              onClick={handleCreate}
             >
               Simpan
             </Button>
@@ -230,4 +235,4 @@ const YudisiumRequestEdit = () => {
   )
 }
 
-export default YudisiumRequestEdit
+export default YudisiumRequestCreate

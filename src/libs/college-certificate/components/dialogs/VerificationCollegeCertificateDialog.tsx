@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Autocomplete, DialogTitle, InputAdornment, OutlinedInput, Switch, TextField } from '@mui/material'
+import { DialogTitle } from '@mui/material'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -13,14 +13,13 @@ import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { useAuth } from 'src/hooks/useAuth'
 import { VerificationSuratPayload } from '../../consts/payload'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
 import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
 import RejectVerificationDialog from './RejectVerificationDialog'
-import { setRefresher } from 'src/stores/college-certificate/collegeCertificateSlice'
+import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -37,8 +36,9 @@ interface VerificatioDialogProps {
 
 const VerificationCollegeCertificateDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
   const dispatch: AppDispatch = useDispatch()
-  const { user } = useAuth()
-  const { watch, setValue, handleSubmit, reset } = useForm()
+
+  // const { user } = useAuth()
+  const { handleSubmit, reset } = useForm()
 
   const [isReject, setIsReject] = useState<boolean>(false)
 
@@ -59,12 +59,11 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
 
     const body: VerificationSuratPayload = {
       action: action,
-      reason: value?.reason,
-      noSurat: value?.noSurat
+      reason: value?.reason
     }
 
     // @ts-ignore
-    await dispatch(verificationCollegeCertificate({ data: body, id: values?.id })).then(res => {
+    await dispatch(verificationCollegeCertificate({ data: body, id: values?.ulid })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -143,20 +142,6 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
                 Apakah anda ingin melakukan verifikasi pada surat ini?
               </Typography>
             </Grid>
-            {user?.UserLevel?.name === 'KASUBBAG_KEMAHASISWAAN' && (
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  required
-                  label='Nomor Surat'
-                  placeholder='Masukan Nomor Surat'
-                  value={watch('noSurat') ?? ''}
-                  onChange={(e: any) => {
-                    setValue('noSurat', e.target.value)
-                  }}
-                />
-              </Grid>
-            )}
           </Grid>
         </DialogContent>
         <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>

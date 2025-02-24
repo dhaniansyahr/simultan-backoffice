@@ -19,7 +19,7 @@ import toast from 'react-hot-toast'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
 import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
-import { setRefresher } from 'src/stores/college-certificate/collegeCertificateSlice'
+import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
 import { VerificationSuratPayload } from '../../consts/payload'
 
 const Transition = forwardRef(function Transition(

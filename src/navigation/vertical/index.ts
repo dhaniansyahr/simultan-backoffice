@@ -2,46 +2,18 @@
 import { VerticalNavItemsType } from 'src/@core/layouts/types'
 
 const navigation = (): VerticalNavItemsType => {
+  // Get menu from localStorage
+  const menuFromStorage = localStorage.getItem('menuRole')
+  const menuItems = menuFromStorage ? JSON.parse(menuFromStorage) : []
+
+  // Always return dashboard along with menu items, regardless if menuItems is empty
   return [
     {
-      title: 'Surat Keterangan Kuliah',
-      path: '/college-certificate'
+      title: 'Dashboard',
+      path: '/dashboard',
+      icon: 'mdi:home-outline' // Optional: add an icon for the dashboard
     },
-    {
-      title: 'Permohonan Cuti Sementara',
-      path: '/temporary-leave-request'
-    },
-    {
-      title: 'Pengajuan Yudisium',
-      path: '/yudisium-request'
-    },
-
-    // {
-    //   title: 'Permohonan Aktif Kembali',
-    //   path: '/request-reactivation'
-    // },
-    // {
-    //   title: 'Perubahan Mata Kuliah',
-    //   path: '/change-of-course'
-    // },
-    // {
-    //   title: 'Pembatalan Mata Kuliah',
-    //   path: '/course-cancellation'
-    // },
-    {
-      sectionTitle: 'Others'
-    },
-    {
-      title: 'User Management',
-      path: '/user-management',
-      icon: 'ix:user-management'
-    },
-    {
-      title: 'ACL',
-      path: '/access-control-list',
-      icon: 'bx:universal-access'
-    }
+    ...(menuItems || []) // Use nullish coalescing to ensure we spread an array
   ]
 }
-
 export default navigation

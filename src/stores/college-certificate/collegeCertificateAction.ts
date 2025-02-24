@@ -53,6 +53,19 @@ export const verificationCollegeCertificate = createAsyncThunk(
   }
 )
 
+export const inputNomorSurat = createAsyncThunk(
+  'collegeCertificate/verification',
+  async ({ data, id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/surat-keterangan-kuliah/${id}/input-nomor-surat`, data)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
 export const printCollegeCertificate = createAsyncThunk(
   'collegeCertificate/print',
   async ({ data, id }: any, { rejectWithValue }) => {

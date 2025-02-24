@@ -19,7 +19,6 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { useDispatch } from 'react-redux'
-import { CreateCutiPayload } from '../consts/payload'
 import { createTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
 
 const TemporaryLeaveRequestCreateContainer = () => {
@@ -34,11 +33,11 @@ const TemporaryLeaveRequestCreateContainer = () => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
-    const body: CreateCutiPayload = {
-      suratPersetujuanOrangTuaUrl: value?.suratPersetujuanOrangTua[0]?.previewUrl,
-      bebasPustakaUrl: value?.suratBebasPustaka[0]?.previewUrl,
-      bssFormUrl: value?.suratBss[0]?.previewUrl,
-      reason: value?.reason
+    const body: any = {
+      suratIzinOrangTuaUrl: value?.suratPersetujuanOrangTua[0]?.previewUrl,
+      suratBebasPustakaUrl: value?.suratBebasPustaka[0]?.previewUrl,
+      suratBssUrl: value?.suratBss[0]?.previewUrl,
+      alasanPengajuan: value?.reason
     }
 
     // @ts-ignore

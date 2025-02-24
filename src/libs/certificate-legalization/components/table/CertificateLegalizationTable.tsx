@@ -18,18 +18,18 @@ import { useSelector } from 'react-redux'
 import { useRouter } from 'next/router'
 import { checkAccess } from 'src/utils/checkAccess'
 import moment from 'moment'
-import VerificationCollegeCertificateDialog from '../dialogs/VerificationDialog'
-import { getAllTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
-import { AppDispatch, RootState } from 'src/stores'
+import { RootState } from 'src/stores'
 import { formatString, getStatus } from 'src/utils'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import DialogDetail from '../dialogs/DialogDetail'
+import DialogVerification from '../dialogs/DIalogVerifiacation'
+import { getAllCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 
-export default function TemporaryLeaveRequestTable() {
-  const dispatch: AppDispatch = useDispatch()
+export default function CertificateLegalizationTable() {
+  const dispatch = useDispatch()
   const router = useRouter()
 
-  const { refresher } = useSelector((state: RootState) => state.temporaryLeaveRequest)
+  const { refresher } = useSelector((state: RootState) => state.certificateLegalization)
 
   const [data, setData] = useState<any>(null)
 
@@ -74,27 +74,17 @@ export default function TemporaryLeaveRequestTable() {
     },
     {
       flex: 0.25,
-      field: 'reason',
-      headerName: 'Alasan',
-      minWidth: 160,
-      sortable: false,
-      renderCell: (params: any) => {
-        return <span>{params?.row?.alasanPengajuan ?? '-'}</span>
-      }
-    },
-    {
-      flex: 0.25,
       field: 'status',
       headerName: 'Status',
       minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
-        const status = getStatus(params?.row?.status?.[params?.row?.status.length - 1]?.nama ?? '-')
+        const status = getStatus(params?.row?.verifikasiStatus ?? '-')
 
         return (
           <span>
             <Chip
-              label={formatString(params?.row?.status?.[params?.row?.status.length - 1]?.nama ?? '-')}
+              label={formatString(params?.row?.verifikasiStatus ?? '-')}
               sx={{
                 backgroundColor: theme =>
                   status === 'DIPROSES'
@@ -128,7 +118,7 @@ export default function TemporaryLeaveRequestTable() {
               gap: 2
             }}
           >
-            {checkAccess('CUTI_SEMENTARA', 'VIEW') && (
+            {checkAccess('LEGALISIR_IJAZAH', 'VIEW') && (
               <IconButton
                 id={params?.row?.id}
                 onClick={() => {
@@ -140,7 +130,7 @@ export default function TemporaryLeaveRequestTable() {
               </IconButton>
             )}
 
-            {checkAccess('CUTI_SEMENTARA', 'VERIFICATION') && (
+            {checkAccess('LEGALISIR_IJAZAH', 'VERIFICATION') && (
               <Button
                 size='small'
                 color='primary'
@@ -170,7 +160,7 @@ export default function TemporaryLeaveRequestTable() {
     } as any
 
     // @ts-ignore
-    await dispatch(getAllTemporaryLeaveRequest({ data: body })).then((res: any) => {
+    await dispatch(getAllCertificateLegalization({ data: body })).then((res: any) => {
       if (
         !(res.payload.content?.entries ?? []).some((obj: any) =>
           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
@@ -210,7 +200,7 @@ export default function TemporaryLeaveRequestTable() {
           title={
             <Box>
               <Typography variant='h6' sx={{ fontWeight: 500 }}>
-                Cuti Sementara
+                Pengajuan Legalisir Ijazah
               </Typography>
             </Box>
           }
@@ -224,13 +214,27 @@ export default function TemporaryLeaveRequestTable() {
         <CardHeader
           action={
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-              {checkAccess('CUTI_SEMENTARA', 'CREATE') && (
+              {checkAccess('LEGALISIR_IJAZAH', 'CREATE') && (
                 <Button
                   variant='contained'
                   color='primary'
-                  sx={{ mb: 2 }}
+                  sx={{
+                    padding: { sm: '5px 20px', xs: '5px 15px' },
+                    transition: 'transform 0.2s ease-in-out',
+                    '&:hover': {
+                      animation: 'bounce 0.5s infinite'
+                    },
+                    '@keyframes bounce': {
+                      '0%, 100%': {
+                        transform: 'translateY(0)'
+                      },
+                      '50%': {
+                        transform: 'translateY(-5px)'
+                      }
+                    }
+                  }}
                   startIcon={<Icon icon='ic:baseline-add' />}
-                  onClick={() => router.push('/temporary-leave/create')}
+                  onClick={() => router.push('/certificate-legalization/create')}
                 >
                   Buat Pengajuan
                 </Button>
@@ -275,7 +279,7 @@ export default function TemporaryLeaveRequestTable() {
         </CardContent>
       </Card>
 
-      <VerificationCollegeCertificateDialog
+      <DialogVerification
         open={isDialogVerificationOpen}
         onClose={(v: boolean) => setIsDialogVerificationOpen(v)}
         values={itemSelected}

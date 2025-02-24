@@ -13,15 +13,11 @@ import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { useAuth } from 'src/hooks/useAuth'
-
-import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
-import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import { inputNomorSurat } from 'src/stores/college-certificate/collegeCertificateAction'
 import RejectVerificationDialog from './RejectVerificationDialog'
-import { setRefresher } from 'src/stores/college-certificate/collegeCertificateSlice'
-import { VerificationSuratPayload } from '../../consts/payload'
+import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -36,9 +32,9 @@ interface VerificatioDialogProps {
   values: any
 }
 
-const VerificationYudisiumRequestDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
+const InputNomorSuratDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
   const dispatch: AppDispatch = useDispatch()
-  const { user } = useAuth()
+
   const { watch, setValue, handleSubmit, reset } = useForm()
 
   const [isReject, setIsReject] = useState<boolean>(false)
@@ -54,18 +50,16 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (value: any, action: 'DITOLAK' | 'DISETUJUI') => {
+  const handleVerification = async (value: any) => {
     setIsLoading(true)
-    toast.loading('Verification...')
+    toast.loading('Inputing...')
 
-    const body: VerificationSuratPayload = {
-      action: action,
-      reason: value?.reason,
-      noSurat: value?.noSurat
+    const body: any = {
+      nomorSurat: value?.noSurat
     }
 
     // @ts-ignore
-    await dispatch(verificationCollegeCertificate({ data: body, id: values?.id })).then(res => {
+    await dispatch(inputNomorSurat({ data: body, id: values?.ulid })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -94,7 +88,7 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
           </IconButton>
           <Box>
             <Typography variant='h5' align='center'>
-              Verifikasi Pengajuan
+              Input Nomor Surat
             </Typography>
           </Box>
         </DialogTitle>
@@ -117,34 +111,6 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
             }}
           >
             <Grid item xs={12}>
-              <Box
-                sx={{
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center'
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    width: '72px',
-                    height: '72px',
-                    backgroundColor: theme => hexToRGBA(theme.palette.primary.main, 0.12),
-                    borderRadius: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Icon icon='solar:clipboard-check-bold' width={48} color='#CA8A04' />
-                </Box>
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant='h5' align='center'>
-                Apakah anda ingin melakukan verifikasi pada surat ini?
-              </Typography>
-            </Grid>
-            {user?.UserLevel?.name === 'KASUBBAG_KEMAHASISWAAN' && (
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -157,7 +123,7 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
                   }}
                 />
               </Grid>
-            )}
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>
@@ -169,7 +135,7 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
             sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
             onClick={() => setIsReject(true)}
           >
-            Tolak
+            Cancel
           </Button>
           <Button
             type='submit'
@@ -177,9 +143,9 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
             color='success'
             disabled={isLoading}
             sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={handleSubmit(value => handleVerification(value, 'DISETUJUI'))}
+            onClick={handleSubmit(handleVerification)}
           >
-            Verifikasi
+            Submit
           </Button>
         </DialogActions>
       </Dialog>
@@ -193,4 +159,4 @@ const VerificationYudisiumRequestDialog = ({ open, onClose, values }: Verificati
   )
 }
 
-export default VerificationYudisiumRequestDialog
+export default InputNomorSuratDialog

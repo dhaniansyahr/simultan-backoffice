@@ -13,11 +13,10 @@ import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { VerificationSuratPayload } from '../../consts/payload'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
-import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
-import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
+import { verificationCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
+import { setRefresher } from 'src/stores/certificate-legalization/certificateLegalizationSlice'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -32,7 +31,7 @@ interface RejectVerificatioProps {
   closeVerification: () => void
 }
 
-const RejectVerificationDialog = ({ open, onClose, closeVerification }: RejectVerificatioProps) => {
+const DialogReject = ({ open, onClose, closeVerification }: RejectVerificatioProps) => {
   const dispatch: AppDispatch = useDispatch()
 
   const { watch, setValue, handleSubmit, reset } = useForm()
@@ -48,17 +47,17 @@ const RejectVerificationDialog = ({ open, onClose, closeVerification }: RejectVe
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (value: any, action: 'DITOLAK' | 'DISETUJUI') => {
+  const handleVerification = async (value: any) => {
     setIsLoading(true)
     toast.loading('Verification...')
 
-    const body: VerificationSuratPayload = {
-      action: action,
+    const body: any = {
+      action: 'USULAN_DITOLAK',
       reason: value?.reason
     }
 
     // @ts-ignore
-    await dispatch(verificationCollegeCertificate({ data: body })).then(res => {
+    await dispatch(verificationCertificateLegalization({ data: body })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -142,11 +141,7 @@ const RejectVerificationDialog = ({ open, onClose, closeVerification }: RejectVe
           color='success'
           disabled={isLoading}
           sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-          onClick={e => {
-            e.preventDefault()
-
-            handleSubmit(value => handleVerification(value, 'DITOLAK'))
-          }}
+          onClick={handleSubmit(handleVerification)}
         >
           Submit
         </Button>
@@ -155,4 +150,4 @@ const RejectVerificationDialog = ({ open, onClose, closeVerification }: RejectVe
   )
 }
 
-export default RejectVerificationDialog
+export default DialogReject

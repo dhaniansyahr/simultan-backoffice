@@ -46,3 +46,19 @@ export function formatString(str: string): string {
     .join(' ')
     .trim()
 }
+
+export function getStatus(value: string): string {
+  if (!value) return '-'
+
+  const formattedValue = value.split('_').join(' ')
+
+  if (formattedValue.includes('DIPROSES') || formattedValue.includes('SURAT_DIPROSES')) {
+    return 'DIPROSES'
+  } else if (formattedValue.includes('DISETUJUI') || formattedValue.includes('USULAN_DISETUJUI')) {
+    return 'DISETUJUI'
+  } else if (formattedValue.includes('DITOLAK') || formattedValue.includes('USULAN_DITOLAK')) {
+    return 'DITOLAK'
+  }
+
+  return formattedValue
+}
