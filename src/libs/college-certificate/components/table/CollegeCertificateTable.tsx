@@ -136,7 +136,7 @@ export default function CollegeCertificateTable() {
       minWidth: 360,
       sortable: false,
       renderCell: (params: any) => {
-        const status = params?.row?.status?.find((item: any) => item.nama === 'SURAT_DIPROSES')
+        const status = params?.row?.verifikasiStatus
 
         return (
           <div
@@ -159,18 +159,20 @@ export default function CollegeCertificateTable() {
 
             {checkAccess('SURAT_KETERANGAN_KULIAH', 'VERIFICATION') && (
               <Box display='flex' gap={2}>
-                <Button
-                  size='small'
-                  color='primary'
-                  variant='contained'
-                  onClick={() => {
-                    setIsDialogVerificationOpen(true)
-                    setItemSelected(params.row)
-                  }}
-                >
-                  Verifikasi
-                </Button>
-                {status && (
+                {status !== 'SURAT_DIPROSES' && (
+                  <Button
+                    size='small'
+                    color='primary'
+                    variant='contained'
+                    onClick={() => {
+                      setIsDialogVerificationOpen(true)
+                      setItemSelected(params.row)
+                    }}
+                  >
+                    Verifikasi
+                  </Button>
+                )}
+                {status === 'SURAT_DIPROSES' && (
                   <Button
                     size='small'
                     color='info'

@@ -10,8 +10,7 @@ const navigation = (): VerticalNavItemsType => {
   return [
     {
       title: 'Dashboard',
-      path: '/dashboard',
-      icon: 'mdi:home-outline' // Optional: add an icon for the dashboard
+      path: '/dashboard'
     },
     ...(menuItems || []) // Use nullish coalescing to ensure we spread an array
   ]
