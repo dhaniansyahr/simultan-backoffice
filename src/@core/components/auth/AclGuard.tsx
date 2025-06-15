@@ -1,24 +1,26 @@
 // ** React Imports
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
 
 // ** Types
-import type { ACLObj, AppAbility } from 'src/configs/acl'
-
-// ** Context Imports
-import { AbilityContext } from 'src/layouts/components/acl/Can'
-
-// ** Config Import
-import { buildAbilityFor } from 'src/configs/acl'
+import type { Actions, Subjects } from 'src/configs/acl'
 
 // ** Component Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 import NotAuthorized from 'src/pages/401'
+import Spinner from 'src/@core/components/spinner'
 
 // ** Hooks
 import { useAuth } from 'src/hooks/useAuth'
+import { useAbility } from 'src/context/AbilityContext'
+import { useAcl } from 'src/context/AclContext'
+
+interface ACLObj {
+  action: Actions
+  subject: Subjects
+}
 
 interface AclGuardProps {
   children: ReactNode
@@ -31,27 +33,30 @@ const AclGuard = (props: AclGuardProps) => {
   // ** Props
   const { aclAbilities, children, guestGuard = false } = props
 
-  // const { aclAbilities, children, guestGuard = false, authGuard = true } = props
-
-  const [ability, setAbility] = useState<AppAbility | undefined>(undefined)
-
   // ** Hooks
   const auth = useAuth()
   const router = useRouter()
+  const ability = useAbility()
+  const { aclRoles } = useAcl()
 
   // If guestGuard is true and user is not logged in or its an error page, render the page without checking access
   if (guestGuard || router.route === '/404' || router.route === '/500' || router.route === '/') {
     return <>{children}</>
   }
 
-  // User is logged in, build ability for the user based on his role
-  if (auth.user && auth.user.role && !ability) {
-    setAbility(buildAbilityFor(auth.user.role, aclAbilities.subject))
+  // If user is not logged in, let AuthGuard handle it
+  if (!auth.user) {
+    return <>{children}</>
+  }
+
+  // If user is logged in but ACL roles are still loading, show spinner
+  if (auth.user && (!aclRoles || Object.keys(aclRoles).length === 0)) {
+    return <Spinner />
   }
 
   // Check the access of current user and render pages
-  if (ability && ability.can(aclAbilities.action, aclAbilities.subject)) {
-    return <AbilityContext.Provider value={ability}>{children}</AbilityContext.Provider>
+  if (auth.user && ability.can(aclAbilities.action, aclAbilities.subject)) {
+    return <>{children}</>
   }
 
   // Render Not Authorized component if the current user has limited access

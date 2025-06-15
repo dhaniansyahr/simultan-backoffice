@@ -68,11 +68,10 @@ export const inputNomorSurat = createAsyncThunk(
 
 export const printCollegeCertificate = createAsyncThunk(
   'collegeCertificate/print',
-  async ({ data, id }: any, { rejectWithValue }) => {
+  async ({ id }: any, { rejectWithValue }) => {
     try {
       // Set the responseType to 'blob' to properly handle PDF responses
-      const response = await api.get(`/surat-keterangan-kuliah/${id}/cetak`, {
-        ...data,
+      const response = await api.get(`/surat-keterangan-kuliah/${id}/cetak-surat`, {
         responseType: 'blob'
       })
 

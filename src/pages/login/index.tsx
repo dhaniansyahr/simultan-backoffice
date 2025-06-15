@@ -1,29 +1,25 @@
 // ** React Imports
 import { ReactNode, useState } from 'react'
 
-// ** Next Import
-
 // ** MUI Components
 import { Icon } from '@iconify/react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MuiCard, { CardProps } from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import FormControl from '@mui/material/FormControl'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import InputLabel from '@mui/material/InputLabel'
-import OutlinedInput from '@mui/material/OutlinedInput'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 import Image from 'next/image'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 import themeConfig from 'src/configs/themeConfig'
 import { useAuth } from 'src/hooks/useAuth'
 import { LoginParams } from 'src/context/types'
+import { Alert } from '@mui/material'
 
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: 450 }
@@ -31,10 +27,11 @@ const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
 
 const Login = () => {
   const auth = useAuth()
-  const { watch, setValue, handleSubmit } = useForm()
+  const { handleSubmit, control } = useForm()
 
   const [isShowPassword, setIsShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errors, setErrors] = useState<any>([])
 
   const handleLogin = async (value: any) => {
     setIsLoading(true)
@@ -43,7 +40,8 @@ const Login = () => {
 
     auth.login(body, (err: any) => {
       toast.dismiss()
-      toast.error(err.response?.data?.message)
+      toast.error(err.response?.data?.errors?.[0]?.message)
+      setErrors(err.response?.data?.errors)
       setIsLoading(false)
 
       return
@@ -72,41 +70,64 @@ const Login = () => {
             </Typography>
             <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
           </Box>
+
+          <Box sx={{ mb: 4 }}>
+            {errors.map((error: any, index: number) => (
+              <Alert severity='error' sx={{ mb: 2 }} key={index}>
+                {error.message}
+              </Alert>
+            ))}
+          </Box>
           <form noValidate autoComplete='off' onSubmit={handleSubmit(handleLogin)}>
-            <TextField
-              autoFocus
-              fullWidth
-              id='email'
-              label='NIP/NPM'
-              sx={{ mb: 4 }}
-              value={watch('identityNumber')}
-              onChange={e => {
-                setValue('identityNumber', e.target.value)
+            <Controller
+              control={control}
+              name='identity'
+              render={({ field, formState: { errors } }) => (
+                <TextField
+                  autoFocus
+                  fullWidth
+                  label='NIP/NPM'
+                  sx={{ mb: 4 }}
+                  value={field.value}
+                  onChange={e => field.onChange(e.target.value)}
+                  error={!!errors.identity}
+                  helperText={errors.identity?.message as string}
+                />
+              )}
+              rules={{
+                required: 'NIP/NPM harus diisi'
               }}
             />
-            <FormControl fullWidth>
-              <InputLabel htmlFor='auth-login-password'>Password</InputLabel>
-              <OutlinedInput
-                label='Password'
-                id='auth-login-password'
-                type={isShowPassword ? 'text' : 'password'}
-                endAdornment={
-                  <InputAdornment position='end'>
-                    <IconButton
-                      edge='end'
-                      onClick={() => setIsShowPassword(!isShowPassword)}
-                      aria-label='toggle password visibility'
-                    >
-                      {isShowPassword ? <Icon icon='mdi:eye-outline' /> : <Icon icon='mdi:eye-off-outline' />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-                value={watch('password')}
-                onChange={e => {
-                  setValue('password', e.target.value)
-                }}
-              />
-            </FormControl>
+
+            <Controller
+              control={control}
+              name='password'
+              render={({ field, formState: { errors } }) => (
+                <TextField
+                  fullWidth
+                  label='Password'
+                  sx={{ mb: 4 }}
+                  value={field.value}
+                  onChange={e => field.onChange(e.target.value)}
+                  error={!!errors.password}
+                  helperText={errors.password?.message as string}
+                  type={isShowPassword ? 'text' : 'password'}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        <IconButton onClick={() => setIsShowPassword(!isShowPassword)}>
+                          {isShowPassword ? <Icon icon='mdi:eye-outline' /> : <Icon icon='mdi:eye-off-outline' />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              )}
+              rules={{
+                required: 'Password harus diisi'
+              }}
+            />
+
             <Box sx={{ mb: 4 }} />
             <Button fullWidth type='submit' variant='contained' size='large' sx={{ mb: 7 }} disabled={isLoading}>
               Login
@@ -114,7 +135,6 @@ const Login = () => {
           </form>
         </CardContent>
       </Card>
-      {/* <FooterIllustrations /> */}
     </Box>
   )
 }

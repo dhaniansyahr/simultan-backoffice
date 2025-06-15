@@ -14,7 +14,7 @@ import { LayoutProps } from 'src/@core/layouts/types'
 import Icon from 'src/@core/components/icon'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
+// import themeConfig from 'src/configs/themeConfig'
 import Image from 'next/image'
 
 interface Props {
@@ -144,9 +144,9 @@ const VerticalNavHeader = (props: Props) => {
             </Box>
             <Box sx={{ ...menuCollapsedStyles, ...(navCollapsed && !navHover ? {} : { ml: 4 }) }}>
               <HeaderTitle variant='body1' sx={{ color: 'black' }}>
-                {themeConfig.templateName}
+                SIM ULT
               </HeaderTitle>
-              <Typography sx={{ color: 'black' }}>Backoffice</Typography>
+              <Typography sx={{ color: 'black' }}>Pertanian</Typography>
             </Box>
           </Box>
         </LinkStyled>

@@ -47,18 +47,53 @@ export function formatString(str: string): string {
     .trim()
 }
 
-export function getStatus(value: string): string {
-  if (!value) return '-'
+export function getStatus(value: string): { text: string; color: string } {
+  if (!value) return { text: '-', color: 'default' }
 
   const formattedValue = value.split('_').join(' ')
 
   if (formattedValue.includes('DIPROSES') || formattedValue.includes('SURAT_DIPROSES')) {
-    return 'DIPROSES'
-  } else if (formattedValue.includes('DISETUJUI') || formattedValue.includes('USULAN_DISETUJUI')) {
-    return 'DISETUJUI'
-  } else if (formattedValue.includes('DITOLAK') || formattedValue.includes('USULAN_DITOLAK')) {
-    return 'DITOLAK'
+    return { text: 'DIPROSES', color: '#FFA500' }
+  } else if (formattedValue.includes('DISETUJUI')) {
+    return { text: 'DISETUJUI', color: '#008000' }
+  } else if (formattedValue.includes('DITOLAK')) {
+    return { text: 'DITOLAK', color: '#FF0000' }
   }
 
-  return formattedValue
+  return { text: formattedValue, color: 'default' }
+}
+
+export function generateUlid() {
+  const timestamp = Date.now()
+  const timestampPart = timestamp.toString(32).padStart(10, '0')
+
+  const randomPart = Array.from({ length: 16 }, () => Math.floor(Math.random() * 32).toString(32)).join('')
+
+  return (timestampPart + randomPart).toUpperCase()
+}
+
+export const getDocument = (prefix: string): Promise<File | null> => {
+  return new Promise(resolve => {
+    const inputFile = document.createElement('input')
+
+    inputFile.type = 'file'
+    inputFile.accept = 'application/pdf'
+    inputFile.style.display = 'none'
+
+    document.body.appendChild(inputFile)
+    inputFile.click()
+
+    inputFile.addEventListener('change', (e: any) => {
+      const file = e.target.files?.[0]
+
+      let newFile = null
+
+      if (file) {
+        newFile = new File([file], `${prefix}-${generateUlid()}.${file?.name?.split('.')[1]}`, { type: file.type })
+      }
+
+      document.body.removeChild(inputFile)
+      resolve(newFile)
+    })
+  })
 }

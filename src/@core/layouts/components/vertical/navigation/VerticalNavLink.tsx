@@ -24,7 +24,6 @@ import { Settings } from 'src/@core/context/settingsContext'
 // ** Custom Components Imports
 import UserIcon from 'src/layouts/components/UserIcon'
 import Translations from 'src/layouts/components/Translations'
-import CanViewNavLink from 'src/layouts/components/acl/CanViewNavLink'
 
 // ** Util Import
 import { handleURLQueries } from 'src/@core/layouts/utils'
@@ -95,7 +94,11 @@ const VerticalNavLink = ({
   const icon = parent && !item.icon ? themeConfig.navSubItemIcon : item.icon
 
   const isNavLinkActive = () => {
-    if (router.pathname === item.path || handleURLQueries(router, item.path)) {
+    if (
+      router.pathname === item.path ||
+      handleURLQueries(router, item.path) ||
+      router.pathname.includes(item.path || '')
+    ) {
       return true
     } else {
       return false
@@ -103,84 +106,82 @@ const VerticalNavLink = ({
   }
 
   return (
-    <CanViewNavLink navLink={item}>
-      <ListItem
-        disablePadding
-        className='nav-link'
-        disabled={item.disabled || false}
+    <ListItem
+      disablePadding
+      className='nav-link'
+      disabled={item.disabled || false}
+      sx={{
+        mt: 1.5,
+        transition: 'padding .25s ease-in-out',
+        px: theme => (parent ? '0 !important' : `${theme.spacing(navCollapsed && !navHover ? 2 : 3)} !important`)
+      }}
+    >
+      <MenuNavLink
+        component={Link}
+        {...(item.disabled && { tabIndex: -1 })}
+        className={isNavLinkActive() ? 'active' : ''}
+        href={item.path === undefined ? '/' : `${item.path}`}
+        {...(item.openInNewTab ? { target: '_blank' } : null)}
+        onClick={e => {
+          if (item.path === undefined) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+          if (navVisible) {
+            toggleNavVisibility()
+          }
+        }}
         sx={{
-          mt: 1.5,
-          transition: 'padding .25s ease-in-out',
-          px: theme => (parent ? '0 !important' : `${theme.spacing(navCollapsed && !navHover ? 2 : 3)} !important`)
+          py: 2.25,
+          ...(item.disabled ? { pointerEvents: 'none' } : { cursor: 'pointer' }),
+          pr: navCollapsed && !navHover ? (collapsedNavWidth - navigationBorderWidth - 24 - 16) / 8 : 3,
+          pl: navCollapsed && !navHover ? (collapsedNavWidth - navigationBorderWidth - 24 - 16) / 8 : 4
         }}
       >
-        <MenuNavLink
-          component={Link}
-          {...(item.disabled && { tabIndex: -1 })}
-          className={isNavLinkActive() ? 'active' : ''}
-          href={item.path === undefined ? '/' : `${item.path}`}
-          {...(item.openInNewTab ? { target: '_blank' } : null)}
-          onClick={e => {
-            if (item.path === undefined) {
-              e.preventDefault()
-              e.stopPropagation()
-            }
-            if (navVisible) {
-              toggleNavVisibility()
-            }
-          }}
-          sx={{
-            py: 2.25,
-            ...(item.disabled ? { pointerEvents: 'none' } : { cursor: 'pointer' }),
-            pr: navCollapsed && !navHover ? (collapsedNavWidth - navigationBorderWidth - 24 - 16) / 8 : 3,
-            pl: navCollapsed && !navHover ? (collapsedNavWidth - navigationBorderWidth - 24 - 16) / 8 : 4
-          }}
-        >
-          {isSubToSub ? null : (
-            <ListItemIcon
-              sx={{
-                transition: 'margin .25s ease-in-out',
-                color: 'black',
-                ...(navCollapsed && !navHover ? { mr: 0 } : { mr: 2 }),
-                ...(parent ? { ml: 2, mr: 4 } : {}), // This line should be after (navCollapsed && !navHover) condition for proper styling
-                '& svg': {
-                  ...(!parent ? { fontSize: '1.5rem' } : { fontSize: '0.5rem' }),
-                  ...(parent && item.icon ? { fontSize: '0.875rem' } : {})
-                }
-
-                // color: parent ? 'text.secondary' : 'text.primary',
-              }}
-            >
-              <UserIcon icon={icon as string} />
-            </ListItemIcon>
-          )}
-
-          <MenuItemTextMetaWrapper
+        {isSubToSub ? null : (
+          <ListItemIcon
             sx={{
-              ...(isSubToSub ? { ml: 8 } : {}),
-              ...(navCollapsed && !navHover ? { opacity: 0 } : { opacity: 1 })
+              transition: 'margin .25s ease-in-out',
+              color: 'black',
+              ...(navCollapsed && !navHover ? { mr: 0 } : { mr: 2 }),
+              ...(parent ? { ml: 2, mr: 4 } : {}), // This line should be after (navCollapsed && !navHover) condition for proper styling
+              '& svg': {
+                ...(!parent ? { fontSize: '1.5rem' } : { fontSize: '0.5rem' }),
+                ...(parent && item.icon ? { fontSize: '0.875rem' } : {})
+              }
+
+              // color: parent ? 'text.secondary' : 'text.primary',
             }}
           >
-            <Typography
-              {...((themeConfig.menuTextTruncate || (!themeConfig.menuTextTruncate && navCollapsed && !navHover)) && {
-                noWrap: false
-              })}
-              sx={{ color: 'black' }}
-            >
-              <Translations text={item.title} />
-            </Typography>
-            {item.badgeContent ? (
-              <Chip
-                size='small'
-                label={item.badgeContent}
-                color={item.badgeColor || 'primary'}
-                sx={{ '& .MuiChip-label': { px: 2.5, lineHeight: 1.385, textTransform: 'capitalize' } }}
-              />
-            ) : null}
-          </MenuItemTextMetaWrapper>
-        </MenuNavLink>
-      </ListItem>
-    </CanViewNavLink>
+            <UserIcon icon={icon as string} />
+          </ListItemIcon>
+        )}
+
+        <MenuItemTextMetaWrapper
+          sx={{
+            ...(isSubToSub ? { ml: 8 } : {}),
+            ...(navCollapsed && !navHover ? { opacity: 0 } : { opacity: 1 })
+          }}
+        >
+          <Typography
+            {...((themeConfig.menuTextTruncate || (!themeConfig.menuTextTruncate && navCollapsed && !navHover)) && {
+              noWrap: false
+            })}
+            sx={{ color: 'black' }}
+          >
+            <Translations text={item.title} />
+          </Typography>
+          {item.badgeContent ? (
+            <Chip
+              size='small'
+              label={item.badgeContent}
+              color={item.badgeColor || 'primary'}
+              sx={{ '& .MuiChip-label': { px: 2.5, lineHeight: 1.385, textTransform: 'capitalize' } }}
+            />
+          ) : null}
+        </MenuItemTextMetaWrapper>
+      </MenuNavLink>
+    </ListItem>
   )
 }
 

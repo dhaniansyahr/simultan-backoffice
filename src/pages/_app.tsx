@@ -50,13 +50,19 @@ import 'prismjs/components/prism-tsx'
 
 // ** React Perfect Scrollbar Style
 import 'react-perfect-scrollbar/dist/css/styles.css'
-
 import 'src/iconify-bundle/icons-bundle-react'
 
 // ** Global css styles
 import '../../styles/globals.css'
 import { Provider } from 'react-redux'
 import { store } from 'src/stores'
+import { AbilityProvider } from 'src/context/AbilityContext'
+
+import { AclProvider } from 'src/context/AclContext'
+import { MenuProvider } from 'src/context/MenuContext'
+
+// ** Moment
+import 'moment/locale/id'
 
 // ** Extend App Props with Emotion
 type ExtendedAppProps = AppProps & {
@@ -116,12 +122,12 @@ const App = (props: ExtendedAppProps) => {
     <Provider store={store}>
       <CacheProvider value={emotionCache}>
         <Head>
-          <title>{`${themeConfig.templateName} - Material Design React Admin Template`}</title>
+          <title>{`${themeConfig.templateName} - Sistem Informasi Manajemen Unit Layanan Terpadu Fakultas Pertanian`}</title>
           <meta
             name='description'
-            content={`${themeConfig.templateName} – Material Design React Admin Dashboard Template – is the most developer friendly & highly customizable Admin Dashboard Template based on MUI v5.`}
+            content={`${themeConfig.templateName} - Sistem Informasi Manajemen Unit Layanan Terpadu Fakultas Pertanian`}
           />
-          <meta name='keywords' content='Material Design, MUI, Admin Template, React Admin Template' />
+          <meta name='keywords' content='USK, Universitas Syiah Kuala, ULT, Unit Layanan Terpadu, Fakultas Pertanian' />
           <meta name='viewport' content='initial-scale=1, width=device-width' />
         </Head>
 
@@ -131,13 +137,17 @@ const App = (props: ExtendedAppProps) => {
               {({ settings }) => {
                 return (
                   <ThemeComponent settings={settings}>
-                    <Guard authGuard={authGuard} guestGuard={guestGuard}>
-                      <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
-                        {/* <AclContext> */}
-                        {getLayout(<Component {...pageProps} />)}
-                        {/* </AclContext> */}
-                      </AclGuard>
-                    </Guard>
+                    <AclProvider>
+                      <AbilityProvider>
+                        <MenuProvider>
+                          <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                            <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
+                              {getLayout(<Component {...pageProps} />)}
+                            </AclGuard>
+                          </Guard>
+                        </MenuProvider>
+                      </AbilityProvider>
+                    </AclProvider>
                     <ReactHotToast>
                       <Toaster position={settings.toastPosition} toastOptions={{ className: 'react-hot-toast' }} />
                     </ReactHotToast>

@@ -1,7 +1,22 @@
-import { createContext } from 'react'
-import { AnyAbility } from '@casl/ability'
-import { createContextualCan } from '@casl/react'
+import { ReactNode } from 'react'
+import { useAbility } from 'src/context/AbilityContext'
+import { Actions, Subjects } from 'src/configs/acl'
 
-export const AbilityContext = createContext<AnyAbility>(undefined!)
+interface CanProps {
+  I: Actions
+  a: Subjects
+  children: ReactNode
+  fallback?: ReactNode
+}
 
-export default createContextualCan(AbilityContext.Consumer)
+const Can = ({ I, a, children, fallback = null }: CanProps) => {
+  const ability = useAbility()
+
+  if (ability.can(I, a)) {
+    return <>{children}</>
+  }
+
+  return <>{fallback}</>
+}
+
+export default Can

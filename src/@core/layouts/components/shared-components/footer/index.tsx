@@ -56,7 +56,6 @@ const Footer = (props: Props) => {
         sx={{
           width: '100%',
           py: theme.spacing(footer === 'fixed' && skin === 'bordered' ? 3.875 : 4),
-          ...(contentWidth === 'boxed' && { '@media (min-width:1440px)': { maxWidth: 1440 } }),
           ...(layout === 'vertical' && {
             borderTopLeftRadius: 14,
             borderTopRightRadius: 14,
@@ -76,6 +75,8 @@ const Footer = (props: Props) => {
                 })
               }
             : { px: [4, 6] })
+
+          // ...(contentWidth === 'boxed' && { '@media (min-width:1440px)': { maxWidth: 1440 } }),
         }}
       >
         {userFooterContent ? userFooterContent(props) : <FooterContent />}

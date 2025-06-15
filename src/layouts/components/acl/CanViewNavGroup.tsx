@@ -1,11 +1,10 @@
 // ** React Imports
-import { ReactNode, useContext } from 'react'
-
-// ** Component Imports
-import { AbilityContext } from 'src/layouts/components/acl/Can'
+import { ReactNode } from 'react'
 
 // ** Types
 import { NavGroup, NavLink } from 'src/@core/layouts/types'
+import { Actions, Subjects } from 'src/configs/acl'
+import { useAbility } from 'src/context/AbilityContext'
 
 interface Props {
   navGroup?: NavGroup
@@ -17,14 +16,14 @@ const CanViewNavGroup = (props: Props) => {
   const { children, navGroup } = props
 
   // ** Hook
-  const ability = useContext(AbilityContext)
+  const ability = useAbility()
 
   const checkForVisibleChild = (arr: NavLink[] | NavGroup[]): boolean => {
     return arr.some((i: NavGroup) => {
       if (i.children) {
         return checkForVisibleChild(i.children)
       } else {
-        return ability?.can(i.action, i.subject)
+        return ability?.can(i.action as Actions, i.subject as Subjects)
       }
     })
   }
@@ -36,7 +35,7 @@ const CanViewNavGroup = (props: Props) => {
       return hasAnyVisibleChild
     }
 
-    return ability && ability.can(item.action, item.subject) && hasAnyVisibleChild
+    return ability && ability.can(item.action as Actions, item.subject as Subjects) && hasAnyVisibleChild
   }
 
   if (navGroup && navGroup.auth === false) {

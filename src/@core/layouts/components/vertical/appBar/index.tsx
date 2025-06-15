@@ -54,7 +54,7 @@ const LayoutAppBar = (props: Props) => {
   const scrollTrigger = useScrollTrigger({ threshold: 0, disableHysteresis: true })
 
   // ** Vars
-  const { skin, appBar, appBarBlur, contentWidth } = settings
+  const { skin, appBar, appBarBlur } = settings
 
   const appBarFixedStyles = () => {
     return {
@@ -89,10 +89,11 @@ const LayoutAppBar = (props: Props) => {
       <Toolbar
         className='navbar-content-container'
         sx={{
-          ...(appBar === 'fixed' && scrollTrigger && { ...appBarFixedStyles() }),
-          ...(contentWidth === 'boxed' && {
-            '@media (min-width:1440px)': { maxWidth: `calc(1440px - ${theme.spacing(6)} * 2)` }
-          })
+          ...(appBar === 'fixed' && scrollTrigger && { ...appBarFixedStyles() })
+
+          // ...(contentWidth === 'boxed' && {
+          //   '@media (min-width:1440px)': { maxWidth: `calc(1440px - ${theme.spacing(6)} * 2)` }
+          // })
         }}
       >
         {(userAppBarContent && userAppBarContent(props)) || null}

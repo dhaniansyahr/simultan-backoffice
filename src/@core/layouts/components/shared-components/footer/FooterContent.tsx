@@ -25,7 +25,7 @@ const FooterContent = () => {
       <Typography sx={{ mr: 2 }}>
         {`© ${new Date().getFullYear()}`} -{' '}
         <LinkStyled target='_blank' href='/'>
-          Sistem Penjadwalan Praktikum
+          Sistem Layanan Terpadu Fakultas Pertanian
         </LinkStyled>
       </Typography>
     </Box>
