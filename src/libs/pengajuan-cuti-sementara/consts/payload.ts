@@ -6,7 +6,7 @@ export interface CreateCutiPayload {
 }
 
 export interface VerificationCutiPayload {
-  action: 'USULAN_DISETUJUI' | 'USULAN_DITOLAK'
-  reason?: string
+  action: 'DISETUJUI' | 'DITOLAK'
+  alasanPenolakan?: string
   noSurat?: string
 }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Card, CardContent, Typography, Grid, Divider } from '@mui/material'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useRouter } from 'next/router'
@@ -7,21 +7,49 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { useDispatch } from 'react-redux'
-import { createTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
 import HeaderPage from 'src/components/shared/header-page'
-import FormSection from '../components/form'
-import ActionPage from 'src/components/shared/action-page'
 import { uploadToStorage } from 'src/stores/storage/storageAction'
+import ActionPage from 'src/components/shared/action-page'
+import {
+  getTemporaryLeaveRequest,
+  updateTemporaryLeaveRequest
+} from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
+import FormSection from '../components/form'
 
-const TemporaryLeaveRequestCreateContainer = () => {
+const EditContainer = () => {
   const dispatch = useDispatch()
   const router = useRouter()
-
-  const { handleSubmit, control, setValue } = useForm()
+  const { id } = router.query as { id: string }
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
-
   const [isLoadFile, setIsLoadFile] = useState<string>('')
+
+  const [data, setData] = useState<any>(null)
+
+  const { setValue, handleSubmit, control } = useForm<any>({
+    values: {
+      suratPersetujuanOrangTua: data?.suratIzinOrangTuaUrl,
+      suratBebasPustaka: data?.suratBebasPustakaUrl,
+      suratBss: data?.suratBssUrl,
+      reason: data?.alasanPengajuan
+    }
+  })
+
+  const handleGetData = async () => {
+    setIsLoading(true)
+
+    // @ts-ignore
+    await dispatch(getTemporaryLeaveRequest({ id })).then((res: any) => {
+      if (res.meta.requestStatus !== 'fulfilled') {
+        setIsLoading(false)
+
+        return
+      }
+
+      setData(res.payload.content)
+      setIsLoading(false)
+    })
+  }
 
   const handleUploadDocument = async (key: string, file: File) => {
     setIsLoadFile(key)
@@ -55,7 +83,7 @@ const TemporaryLeaveRequestCreateContainer = () => {
     }
 
     // @ts-ignore
-    await dispatch(createTemporaryLeaveRequest({ data: body })).then((res: any) => {
+    await dispatch(updateTemporaryLeaveRequest({ data: body, id })).then((res: any) => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         setIsLoading(false)
         toast.dismiss()
@@ -72,10 +100,14 @@ const TemporaryLeaveRequestCreateContainer = () => {
     })
   })
 
+  useEffect(() => {
+    handleGetData()
+  }, [id])
+
   return (
     <>
       <Card>
-        <HeaderPage title='Buat Pengajuan Cuti Sementara' isDetail={true} />
+        <HeaderPage title='Edit Pengajuan Cuti Sementara' isDetail={true} />
 
         <CardContent style={{ padding: '16px 48px', borderBottom: '1px solid #f4f4f4' }}>
           <form action='submit' onSubmit={onSubmit}>
@@ -115,4 +147,4 @@ const TemporaryLeaveRequestCreateContainer = () => {
   )
 }
 
-export default TemporaryLeaveRequestCreateContainer
+export default EditContainer

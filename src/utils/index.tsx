@@ -97,3 +97,7 @@ export const getDocument = (prefix: string): Promise<File | null> => {
     })
   })
 }
+
+export function getFileNamefromURL(url: string) {
+  return url?.split('/')?.pop()?.replace(/%20/g, ' ')
+}

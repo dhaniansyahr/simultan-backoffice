@@ -1,5 +1,12 @@
 import TemporaryLeaveRequestCreateContainer from 'src/libs/pengajuan-cuti-sementara/containers/TemporaryLeaveRequestCreateContainer'
 
-export default function Create() {
+const TemporaryLeaveRequestCreatePage = () => {
   return <TemporaryLeaveRequestCreateContainer />
 }
+
+TemporaryLeaveRequestCreatePage.acl = {
+  subject: 'CUTI_SEMENTARA',
+  action: 'CREATE'
+}
+
+export default TemporaryLeaveRequestCreatePage

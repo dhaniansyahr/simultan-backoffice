@@ -14,6 +14,19 @@ export const getAllTemporaryLeaveRequest = createAsyncThunk(
   }
 )
 
+export const getTemporaryLeaveRequest = createAsyncThunk(
+  'temporaryLeaveRequest/get',
+  async ({ id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/cuti-sementara/' + id)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
 export const createTemporaryLeaveRequest = createAsyncThunk(
   'temporaryLeaveRequest/create',
   async ({ data }: any, { rejectWithValue }) => {

@@ -1,25 +1,25 @@
 import { Icon } from '@iconify/react'
-import { DialogTitle } from '@mui/material'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
 import Grid from '@mui/material/Grid'
-import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { VerificationCutiPayload } from '../../consts/payload'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
 import RejectVerificationDialog from './RejectVerificationDialog'
-import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
+
 import { verificationTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
+import HeaderDialog from 'src/components/shared/dialog/header-dialog'
+import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import { Button, CircularProgress } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
+import { setRefresher } from 'src/stores/temporary-leave-request/temporaryLeaveRequestSlice'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -30,14 +30,12 @@ const Transition = forwardRef(function Transition(
 
 interface VerificatioDialogProps {
   open: boolean
-  onClose: (v: boolean) => void
+  onClose: () => void
   values: any
 }
 
-const VerificationDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
+const DialogVerification = ({ open, onClose, values }: VerificatioDialogProps) => {
   const dispatch: AppDispatch = useDispatch()
-
-  const { handleSubmit, reset } = useForm()
 
   const [isReject, setIsReject] = useState<boolean>(false)
 
@@ -45,19 +43,18 @@ const VerificationDialog = ({ open, onClose, values }: VerificatioDialogProps) =
 
   const handleClose = () => {
     setIsLoading(false)
-    reset()
-    onClose(false)
+    onClose()
 
     // @ts-ignore
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (value: any, action: 'USULAN_DITOLAK' | 'USULAN_DISETUJUI') => {
+  const onSubmit = async () => {
     setIsLoading(true)
     toast.loading('Verification...')
 
     const body: VerificationCutiPayload = {
-      action: action
+      action: 'DISETUJUI'
     }
 
     // @ts-ignore
@@ -78,22 +75,15 @@ const VerificationDialog = ({ open, onClose, values }: VerificatioDialogProps) =
 
   return (
     <>
-      <Dialog fullWidth open={open} maxWidth='sm' scroll='body' TransitionComponent={Transition}>
-        <DialogTitle sx={{ mb: 6, px: { xs: 8, sm: 15 }, position: 'relative', backgroundColor: '#F7F7F9' }}>
-          <IconButton
-            onClick={() => {
-              handleClose()
-            }}
-            sx={{ position: 'absolute', right: '1rem', top: '1rem' }}
-          >
-            <Icon icon='material-symbols:close' />
-          </IconButton>
-          <Box>
-            <Typography variant='h5' align='center'>
-              Verifikasi Pengajuan
-            </Typography>
-          </Box>
-        </DialogTitle>
+      <Dialog
+        fullWidth
+        open={open}
+        maxWidth='sm'
+        scroll='body'
+        TransitionComponent={Transition}
+        PaperProps={{ sx: { borderRadius: '0px' } }}
+      >
+        <HeaderDialog title='Verifikasi Pengajuan' onClose={handleClose} />
 
         <DialogContent
           sx={{
@@ -140,53 +130,33 @@ const VerificationDialog = ({ open, onClose, values }: VerificatioDialogProps) =
                 Apakah anda ingin melakukan verifikasi pada pengajuan cuti ini?
               </Typography>
             </Grid>
-            {/* {user?.UserLevel?.name === 'KASUBBAG_KEMAHASISWAAN' && (
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  required
-                  label='Nomor Surat'
-                  placeholder='Masukan Nomor Surat'
-                  value={watch('noSurat') ?? ''}
-                  onChange={(e: any) => {
-                    setValue('noSurat', e.target.value)
-                  }}
-                />
-              </Grid>
-            )} */}
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>
-          <Button
-            variant='contained'
-            color='error'
-            size='medium'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={() => setIsReject(true)}
-          >
+
+        <ActionDialog isDefault={false} isLoading={isLoading} onClose={handleClose}>
+          <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
             Tolak
           </Button>
-          <Button
-            type='submit'
+          <LoadingButton
             variant='contained'
             color='success'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={handleSubmit(value => handleVerification(value, 'USULAN_DISETUJUI'))}
+            onClick={onSubmit}
+            loading={isLoading}
+            loadingIndicator={<CircularProgress size={20} />}
           >
             Verifikasi
-          </Button>
-        </DialogActions>
+          </LoadingButton>
+        </ActionDialog>
       </Dialog>
 
       <RejectVerificationDialog
         open={isReject}
-        onClose={(v: boolean) => setIsReject(v)}
+        onClose={() => setIsReject(false)}
         closeVerification={() => handleClose()}
+        values={values}
       />
     </>
   )
 }
 
-export default VerificationDialog
+export default DialogVerification
