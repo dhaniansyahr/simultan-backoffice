@@ -10,10 +10,12 @@ import type { Actions, Subjects } from 'src/configs/acl'
 // ** Component Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
 import NotAuthorized from 'src/pages/401'
+
 import Spinner from 'src/@core/components/spinner'
 
 // ** Hooks
 import { useAuth } from 'src/hooks/useAuth'
+
 import { useAbility } from 'src/context/AbilityContext'
 import { useAcl } from 'src/context/AclContext'
 
@@ -31,7 +33,7 @@ interface AclGuardProps {
 
 const AclGuard = (props: AclGuardProps) => {
   // ** Props
-  const { aclAbilities, children, guestGuard = false } = props
+  const { children, guestGuard = false } = props
 
   // ** Hooks
   const auth = useAuth()
@@ -55,7 +57,7 @@ const AclGuard = (props: AclGuardProps) => {
   }
 
   // Check the access of current user and render pages
-  if (auth.user && ability.can(aclAbilities.action, aclAbilities.subject)) {
+  if (auth.user && ability.can(props.aclAbilities.action, props.aclAbilities.subject)) {
     return <>{children}</>
   }
 

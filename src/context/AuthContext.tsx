@@ -12,8 +12,10 @@ import authConfig from 'src/configs/auth'
 // ** Types
 import api from 'src/service/api'
 import { AuthValuesType, ErrCallbackType, LoginParams, UserDataType } from './types'
+
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
+
 import { setAclRoles } from 'src/stores/acl/aclSlice'
 
 // ** Defaults
@@ -31,8 +33,6 @@ const AuthContext = createContext(defaultProvider)
 type Props = {
   children: ReactNode
 }
-
-const actionsMap = ['CREATE', 'VIEW', 'EXPORT', 'VERIFICATION']
 
 const AuthProvider = ({ children }: Props) => {
   const dispatch: AppDispatch = useDispatch()
@@ -109,24 +109,7 @@ const AuthProvider = ({ children }: Props) => {
           .then(res => {
             const data = res?.data?.content
 
-            const mappedData = data?.reduce((acc: any, item: any) => {
-              acc[item.feature] = actionsMap.reduce((actionAcc: any, action: string) => {
-                actionAcc[action] = item.actions.includes(action)
-
-                return actionAcc
-              }, {})
-
-              // If actions array is empty, set all actions to false
-              if (item.actions.length === 0) {
-                actionsMap.forEach(action => {
-                  acc[item.feature][action] = false
-                })
-              }
-
-              return acc
-            }, {})
-
-            dispatch(setAclRoles(mappedData))
+            dispatch(setAclRoles(data))
           })
 
         await api
@@ -136,10 +119,7 @@ const AuthProvider = ({ children }: Props) => {
             }
           })
           .then(res => {
-            const data = res.data?.content?.map((item: any) => ({
-              title: item?.title,
-              path: item?.path
-            }))
+            const data = res.data?.content
 
             window.localStorage.setItem('menuRole', JSON.stringify(data))
           })

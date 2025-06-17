@@ -1,15 +1,12 @@
 import { Icon } from '@iconify/react'
-import { Box, Chip, IconButton } from '@mui/material'
-import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { Chip, MenuItem, Typography } from '@mui/material'
+import { GridRenderCellParams } from '@mui/x-data-grid'
 import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
 import Can from 'src/components/acl/Can'
-import {
-  getAllCollegeCertificate,
-  printCollegeCertificate
-} from 'src/stores/college-certificate/collegeCertificateAction'
+import ActionTable from 'src/components/shared/action-table'
+import { getAllCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
@@ -17,7 +14,7 @@ export const useTable = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { refresher } = useAppSelector(state => state.collegeCertificate)
+  const { refresher } = useAppSelector(state => state.certificateLegalization)
 
   const [data, setData] = useState<any>(null)
 
@@ -25,7 +22,23 @@ export const useTable = () => {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
 
-  const columns: GridColDef[] = [
+  const [itemSelected, setItemSelected] = useState<any>(null)
+  const [isVerificationOpen, setIsVerificationOpen] = useState<boolean>(false)
+  const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false)
+
+  //   State Menu
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
+  const openMenu = Boolean(menuAnchorEl)
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation()
+    setMenuAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null)
+  }
+
+  const columns = [
     {
       flex: 0.25,
       field: 'no',
@@ -86,34 +99,52 @@ export const useTable = () => {
       flex: 0.25,
       field: 'action',
       headerName: 'ACTION',
-      minWidth: 160,
+      minWidth: 260,
       sortable: false,
       renderCell: (params: any) => {
         const status = getStatus(params?.row?.verifikasiStatus ?? '-')
 
         return (
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Can I='VIEW' a='SURAT_KETERANGAN_KULIAH'>
-              <IconButton onClick={() => router.push(`/surat-keterangan-aktif-kuliah/detail/${params?.row?.ulid}`)}>
-                <Icon icon='ph:eye' color='primary' />
-              </IconButton>
-            </Can>
-
-            <Can I='UPDATE' a='SURAT_KETERANGAN_KULIAH'>
-              <IconButton
-                onClick={() => router.push(`/surat-keterangan-aktif-kuliah/edit/${params?.row?.ulid}`)}
-                disabled={status.text !== 'DITOLAK'}
+          <ActionTable isOpen={openMenu} onOpen={handleMenuOpen} onClose={handleMenuClose} anchorEl={menuAnchorEl}>
+            <Can I='VIEW' a='CUTI_SEMENTARA'>
+              <MenuItem
+                sx={{ display: 'flex', gap: 2 }}
+                onClick={() => {
+                  setIsDetailOpen(true)
+                  setItemSelected(params?.row)
+                  handleMenuClose()
+                }}
               >
-                <Icon icon='mdi:pencil-outline' color='primary' />
-              </IconButton>
+                <Icon icon='ph:eye' />
+                <Typography variant='body1'>Detail</Typography>
+              </MenuItem>
             </Can>
 
-            <Can I='EXPORT' a='SURAT_KETERANGAN_KULIAH'>
-              <IconButton onClick={() => handleDownloadSurat(params?.row?.ulid)} disabled={status.text !== 'DISETUJUI'}>
-                <Icon icon='ic:baseline-print' color='primary' />
-              </IconButton>
+            <Can I='UPDATE' a='CUTI_SEMENTARA'>
+              <MenuItem
+                sx={{ display: 'flex', gap: 2 }}
+                onClick={() => router.push(`/pengajuan-cuti-sementara/edit/${params?.row?.ulid}`)}
+                disabled={status?.text !== 'DITOLAK'}
+              >
+                <Icon icon='mdi:pencil-outline' />
+                <Typography variant='body1'>Edit</Typography>
+              </MenuItem>
             </Can>
-          </Box>
+
+            <Can I='VERIFICATION' a='CUTI_SEMENTARA'>
+              <MenuItem
+                sx={{ display: 'flex', gap: 2 }}
+                onClick={() => {
+                  setIsVerificationOpen(true)
+                  setItemSelected(params?.row)
+                  handleMenuClose()
+                }}
+              >
+                <Icon icon='mdi:check-outline' />
+                <Typography variant='body1'>Verifikasi</Typography>
+              </MenuItem>
+            </Can>
+          </ActionTable>
         )
       }
     }
@@ -130,7 +161,7 @@ export const useTable = () => {
     } as any
 
     // @ts-ignore
-    await dispatch(getAllCollegeCertificate({ data: body })).then((res: any) => {
+    await dispatch(getAllCertificateLegalization({ data: body })).then((res: any) => {
       if (
         !(res.payload.content?.entries ?? []).some((obj: any) =>
           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
@@ -151,23 +182,6 @@ export const useTable = () => {
     setIsLoading(false)
   }
 
-  const handleDownloadSurat = async (id: string) => {
-    toast.loading('Printing...')
-
-    // @ts-ignore
-    await dispatch(printCollegeCertificate({ id })).then((res: any) => {
-      if (res?.meta?.requestStatus !== 'fulfilled') {
-        toast.dismiss()
-        toast.error(res?.payload?.response?.data?.message)
-
-        return
-      }
-
-      toast.dismiss()
-      toast.success(res?.payload?.message)
-    })
-  }
-
   useEffect(() => {
     setPage(1)
 
@@ -181,12 +195,17 @@ export const useTable = () => {
   }, [page, pageSize])
 
   return {
-    columns,
     data,
     isLoading,
     page,
     pageSize,
+    itemSelected,
+    isVerificationOpen,
+    isDetailOpen,
+    columns,
     setPage,
-    setPageSize
+    setPageSize,
+    setIsVerificationOpen,
+    setIsDetailOpen
   }
 }

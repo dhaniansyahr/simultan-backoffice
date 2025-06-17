@@ -1,25 +1,19 @@
 import { Icon } from '@iconify/react'
-import { DialogTitle } from '@mui/material'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
 import Grid from '@mui/material/Grid'
-import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import React, { ReactElement, Ref, forwardRef, useState } from 'react'
-import 'react-datepicker/dist/react-datepicker.css'
-import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { VerificationSuratPayload } from '../../consts/payload'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
-import { AppDispatch } from 'src/stores'
-import { useDispatch } from 'react-redux'
 import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
-import RejectVerificationDialog from './RejectVerificationDialog'
 import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
+import HeaderDialog from 'src/components/shared/dialog/header-dialog'
+import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import { useAppDispatch } from 'src/utils/dispatch'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -30,36 +24,29 @@ const Transition = forwardRef(function Transition(
 
 interface VerificatioDialogProps {
   open: boolean
-  onClose: (v: boolean) => void
+  onClose: () => void
   values: any
 }
 
-const VerificationCollegeCertificateDialog = ({ open, onClose, values }: VerificatioDialogProps) => {
-  const dispatch: AppDispatch = useDispatch()
-
-  // const { user } = useAuth()
-  const { handleSubmit, reset } = useForm()
-
-  const [isReject, setIsReject] = useState<boolean>(false)
+const DialogVerifikasi = ({ open, onClose, values }: VerificatioDialogProps) => {
+  const dispatch = useAppDispatch()
 
   const [isLoading, setIsLoading] = useState(false)
 
   const handleClose = () => {
     setIsLoading(false)
-    reset()
-    onClose(false)
+    onClose()
 
     // @ts-ignore
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (value: any, action: 'DITOLAK' | 'DISETUJUI') => {
+  const onSubmit = async () => {
     setIsLoading(true)
     toast.loading('Verification...')
 
     const body: VerificationSuratPayload = {
-      action: action,
-      reason: value?.reason
+      action: 'DISETUJUI'
     }
 
     // @ts-ignore
@@ -72,6 +59,7 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
         return
       }
 
+      setIsLoading(false)
       toast.dismiss()
       toast.success(res?.payload?.message)
       handleClose()
@@ -79,24 +67,28 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
   }
 
   return (
-    <>
-      <Dialog fullWidth open={open} maxWidth='sm' scroll='body' TransitionComponent={Transition}>
-        <DialogTitle sx={{ mb: 6, px: { xs: 8, sm: 15 }, position: 'relative', backgroundColor: '#F7F7F9' }}>
-          <IconButton
-            onClick={() => {
-              handleClose()
-            }}
-            sx={{ position: 'absolute', right: '1rem', top: '1rem' }}
-          >
-            <Icon icon='material-symbols:close' />
-          </IconButton>
-          <Box>
-            <Typography variant='h5' align='center'>
-              Verifikasi Pengajuan
-            </Typography>
-          </Box>
-        </DialogTitle>
+    <Dialog
+      fullWidth
+      open={open}
+      maxWidth='sm'
+      scroll='body'
+      TransitionComponent={Transition}
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: '0px',
+          padding: '0px !important'
+        }
+      }}
+    >
+      <HeaderDialog onClose={onClose} title='Verifikasi Pengajuan' />
 
+      <form
+        onSubmit={e => {
+          e.preventDefault()
+
+          onSubmit()
+        }}
+      >
         <DialogContent
           sx={{
             pb: 6,
@@ -144,37 +136,11 @@ const VerificationCollegeCertificateDialog = ({ open, onClose, values }: Verific
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>
-          <Button
-            variant='contained'
-            color='error'
-            size='medium'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={() => setIsReject(true)}
-          >
-            Tolak
-          </Button>
-          <Button
-            type='submit'
-            variant='contained'
-            color='success'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={handleSubmit(value => handleVerification(value, 'DISETUJUI'))}
-          >
-            Verifikasi
-          </Button>
-        </DialogActions>
-      </Dialog>
 
-      <RejectVerificationDialog
-        open={isReject}
-        onClose={(v: boolean) => setIsReject(v)}
-        closeVerification={() => handleClose()}
-      />
-    </>
+        <ActionDialog isDefault={true} isLoading={isLoading} onClose={handleClose} />
+      </form>
+    </Dialog>
   )
 }
 
-export default VerificationCollegeCertificateDialog
+export default DialogVerifikasi

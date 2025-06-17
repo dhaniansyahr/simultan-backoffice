@@ -18,7 +18,7 @@ interface Props {
   saveSettings: LayoutProps['saveSettings']
   setGroupActive: (value: string[]) => void
   setCurrentActiveGroup: (item: string[]) => void
-  verticalNavItems?: LayoutProps['verticalLayoutProps']['navMenu']['navItems']
+  verticalNavItems: LayoutProps['verticalLayoutProps']['navMenu']['navItems']
 }
 
 const resolveNavItemComponent = (item: NavGroup | NavLink | NavSectionTitle) => {
@@ -32,7 +32,7 @@ const VerticalNavItems = (props: Props) => {
   // ** Props
   const { verticalNavItems } = props
 
-  const RenderMenuItems = verticalNavItems?.map((item: NavGroup | NavLink | NavSectionTitle, index: number) => {
+  const RenderMenuItems = (verticalNavItems || [])?.map((item: NavGroup | NavLink | NavSectionTitle, index: number) => {
     const TagName: any = resolveNavItemComponent(item)
 
     return <TagName {...props} key={index} item={item} />

@@ -21,7 +21,7 @@ const AddForm = (props: AddFormProps) => {
       <Grid item xs={12}>
         <Controller
           control={control}
-          name='tipe'
+          name='tipeSurat'
           render={({ field, formState: { errors } }) => (
             <>
               <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
@@ -30,17 +30,17 @@ const AddForm = (props: AddFormProps) => {
               <Autocomplete
                 options={tipeSurat}
                 getOptionLabel={(option: any) => option.label}
-                value={field.value}
+                value={tipeSurat.find((item: any) => item.value === field.value) ?? null}
                 onChange={(e: any, value: any) => {
-                  field.onChange(value)
+                  field.onChange(value?.value)
                 }}
                 renderInput={params => (
                   <TextField {...params} placeholder='Pilih Tipe Surat' fullWidth sx={{ marginTop: '10px' }} />
                 )}
               />
-              {errors.tipe && (
+              {errors.tipeSurat && (
                 <Typography variant='body1' sx={{ color: 'red' }}>
-                  {errors.tipe.message as string}
+                  {errors.tipeSurat.message as string}
                 </Typography>
               )}
             </>
@@ -52,7 +52,7 @@ const AddForm = (props: AddFormProps) => {
       <Grid item xs={12}>
         <Controller
           control={control}
-          name='description'
+          name='deskripsi'
           render={({ field, formState: { errors } }) => (
             <>
               <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
@@ -65,9 +65,9 @@ const AddForm = (props: AddFormProps) => {
                 value={field.value}
                 onChange={e => field.onChange(e.target.value)}
               />
-              {errors.description && (
+              {errors.deskripsi && (
                 <Typography variant='body1' sx={{ color: 'red' }}>
-                  {errors.description.message as string}
+                  {errors.deskripsi.message as string}
                 </Typography>
               )}
             </>
@@ -103,7 +103,7 @@ const AddForm = (props: AddFormProps) => {
                       variant='outlined'
                       color='primary'
                       onClick={async () => {
-                        const file = await getDocument(`${user?.nama}-${user?.nomorIdentitas}`)
+                        const file = await getDocument(`${user?.nomorIdentitas}`)
 
                         console.log(file)
 
@@ -120,9 +120,9 @@ const AddForm = (props: AddFormProps) => {
                   )
                 }}
               />
-              {errors.tipe && (
+              {errors.dokumenUrl && (
                 <Typography variant='body1' sx={{ color: 'red' }}>
-                  {errors.tipe.message as string}
+                  {errors.dokumenUrl.message as string}
                 </Typography>
               )}
             </>

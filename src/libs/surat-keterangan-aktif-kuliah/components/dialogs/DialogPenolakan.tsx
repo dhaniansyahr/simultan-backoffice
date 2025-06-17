@@ -7,12 +7,13 @@ import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { VerificationSuratPayload } from '../../consts/payload'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
-import { verificationCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
-import { setRefresher } from 'src/stores/certificate-legalization/certificateLegalizationSlice'
-import HeaderDialog from 'src/components/shared/dialog/header-dialog'
+import { verificationCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
 import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import HeaderDialog from 'src/components/shared/dialog/header-dialog'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -23,22 +24,22 @@ const Transition = forwardRef(function Transition(
 
 interface RejectVerificatioProps {
   open: boolean
-  onClose: () => void
+  onClose: (v: boolean) => void
   closeVerification: () => void
   values: any
 }
 
-const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerificatioProps) => {
+const DialogPenolakan = ({ open, onClose, closeVerification, values }: RejectVerificatioProps) => {
   const dispatch: AppDispatch = useDispatch()
 
-  const { control, handleSubmit, reset } = useForm()
+  const { handleSubmit, reset, control } = useForm()
 
   const [isLoading, setIsLoading] = useState(false)
 
   const handleClose = () => {
     setIsLoading(false)
     reset()
-    onClose()
+    onClose(false)
 
     // @ts-ignore
     dispatch(setRefresher())
@@ -48,13 +49,12 @@ const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerifi
     setIsLoading(true)
     toast.loading('Verification...')
 
-    const body: any = {
-      action: 'DITOLAK',
-      reason: value?.reason
-    }
+    const body: VerificationSuratPayload = Object.assign({}, value, {
+      action: 'DITOLAK'
+    })
 
     // @ts-ignore
-    await dispatch(verificationCertificateLegalization({ data: body, id: values?.ulid })).then(res => {
+    await dispatch(verificationCollegeCertificate({ data: body, id: values?.ulid })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -77,15 +77,11 @@ const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerifi
       maxWidth='sm'
       scroll='body'
       TransitionComponent={Transition}
-      PaperProps={{
-        sx: {
-          borderRadius: '0px'
-        }
-      }}
+      PaperProps={{ sx: { borderRadius: '0px' } }}
     >
       <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} />
 
-      <form action='submit' onSubmit={onSubmit}>
+      <form onSubmit={onSubmit}>
         <DialogContent
           sx={{
             pb: 6,
@@ -105,9 +101,9 @@ const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerifi
           >
             <Grid item xs={12}>
               <Controller
+                name='alasanPenolakan'
                 control={control}
-                name='reason'
-                render={({ field, fieldState: { error } }) => (
+                render={({ field, formState: { errors } }) => (
                   <TextField
                     fullWidth
                     required
@@ -115,10 +111,10 @@ const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerifi
                     rows={4}
                     label='Alasan'
                     placeholder='Masukan Alasan'
-                    value={field.value ?? ''}
+                    value={field.value}
                     onChange={field.onChange}
-                    error={!!error}
-                    helperText={error?.message}
+                    error={!!errors?.alasanPenolakan}
+                    helperText={errors?.alasanPenolakan?.message as string}
                   />
                 )}
               />
@@ -131,4 +127,4 @@ const DialogReject = ({ open, onClose, closeVerification, values }: RejectVerifi
   )
 }
 
-export default DialogReject
+export default DialogPenolakan

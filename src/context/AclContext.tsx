@@ -30,8 +30,6 @@ type Props = {
   children: ReactNode
 }
 
-const actionsMap = ['CREATE', 'VIEW', 'UPDATE', 'EXPORT', 'VERIFICATION']
-
 const AclProvider = ({ children }: Props) => {
   const dispatch: AppDispatch = useDispatch()
   const { user } = useAuth()
@@ -47,25 +45,25 @@ const AclProvider = ({ children }: Props) => {
       const response = await api.get(`/acl/${user.aksesLevelId}`)
       const data = response?.data?.content
 
-      const mappedData = data?.reduce((acc: any, item: any) => {
-        acc[item.feature] = actionsMap.reduce((actionAcc: any, action: string) => {
-          actionAcc[action] = item.actions.includes(action)
+      // const mappedData = data?.reduce((acc: any, item: any) => {
+      //   acc[item.feature] = actionsMap.reduce((actionAcc: any, action: string) => {
+      //     actionAcc[action] = item.actions.includes(action)
 
-          return actionAcc
-        }, {})
+      //     return actionAcc
+      //   }, {})
 
-        // If actions array is empty, set all actions to false
-        if (item.actions.length === 0) {
-          actionsMap.forEach(action => {
-            acc[item.feature][action] = false
-          })
-        }
+      //   // If actions array is empty, set all actions to false
+      //   if (item.actions.length === 0) {
+      //     actionsMap.forEach(action => {
+      //       acc[item.feature][action] = false
+      //     })
+      //   }
 
-        return acc
-      }, {})
+      //   return acc
+      // }, {})
 
-      dispatch(setAclRoles(mappedData))
-      setAclRolesState(mappedData)
+      dispatch(setAclRoles(data))
+      setAclRolesState(data)
     } catch (error) {
       console.error('Error fetching ACL roles:', error)
     }

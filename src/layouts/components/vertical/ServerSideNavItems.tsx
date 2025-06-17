@@ -10,11 +10,13 @@ const ServerSideNavItems = () => {
   const { user } = useAuth()
 
   // ** State
-  const [menuItems, setMenuItems] = useState<VerticalNavItemsType>([])
+  const [menuItems, setMenuItems] = useState<VerticalNavItemsType[]>([])
 
   useEffect(() => {
     api.get(`/acl/menu/${user?.aksesLevelId}`).then(response => {
       const menuArray = response.data.content
+
+      console.log('menuArray', menuArray)
 
       setMenuItems(menuArray)
     })

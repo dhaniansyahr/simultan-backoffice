@@ -5,7 +5,7 @@ const DashboardPage = () => {
 }
 
 DashboardPage.acl = {
-  subject: 'all',
+  subject: 'DASHBOARD',
   action: 'VIEW'
 }
 

@@ -10,6 +10,7 @@ export type Subjects =
   | 'LEGALISIR_IJAZAH'
   | 'USER_MANAGEMENT'
   | 'ACL'
+  | 'DASHBOARD'
 
 // ** Action Types
 export type Actions = 'CREATE' | 'UPDATE' | 'VIEW' | 'EXPORT' | 'VERIFICATION'
@@ -36,5 +37,5 @@ export const buildAbilityFor = (permissions: Array<{ feature: Subjects; actions:
 // ** Default ACL object - using 'all' subject for default pages
 export const defaultACLObj = {
   action: 'VIEW' as Actions,
-  subject: 'all' as Subjects
+  subject: 'DASHBOARD' as Subjects
 }

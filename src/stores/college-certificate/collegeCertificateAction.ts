@@ -14,6 +14,19 @@ export const getAllCollegeCertificate = createAsyncThunk(
   }
 )
 
+export const getCollegeCertificate = createAsyncThunk(
+  'collegeCertificate/getDetail',
+  async ({ id }: { id: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/surat-keterangan-kuliah/${id}`)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
 export const createCollegeCertificate = createAsyncThunk(
   'collegeCertificate/create',
   async ({ data }: any, { rejectWithValue }) => {

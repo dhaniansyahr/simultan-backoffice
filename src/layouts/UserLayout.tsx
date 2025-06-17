@@ -23,7 +23,9 @@ import HorizontalAppBarContent from './components/horizontal/AppBarContent'
 
 // ** Hook Import
 import { useSettings } from 'src/@core/hooks/useSettings'
-import ServerSideNavItems from './components/vertical/ServerSideNavItems'
+import navigation from 'src/navigation/vertical'
+
+// import ServerSideNavItems from './components/vertical/ServerSideNavItems'
 
 interface Props {
   children: ReactNode
@@ -35,7 +37,7 @@ const UserLayout = ({ children, contentHeightFixed }: Props) => {
   const { settings, saveSettings } = useSettings()
 
   // ** Vars for server side navigation
-  const { menuItems } = ServerSideNavItems()
+  // const { menuItems } = ServerSideNavItems()
 
   // const { menuItems: horizontalMenuItems } = ServerSideHorizontalNavItems()
 
@@ -64,7 +66,7 @@ const UserLayout = ({ children, contentHeightFixed }: Props) => {
           // navItems: VerticalNavItems()
 
           // Uncomment the below line when using server-side menu in vertical layout and comment the above line
-          navItems: menuItems
+          navItems: navigation()
         },
         appBar: {
           content: props => (

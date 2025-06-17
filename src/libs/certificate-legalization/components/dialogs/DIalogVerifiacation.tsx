@@ -1,12 +1,10 @@
 import { Icon } from '@iconify/react'
-import { Button, DialogTitle } from '@mui/material'
+import { Button, CircularProgress } from '@mui/material'
 import Box from '@mui/material/Box'
 import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
 import Grid from '@mui/material/Grid'
-import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -16,6 +14,9 @@ import { useDispatch } from 'react-redux'
 import DialogReject from './DialogReject'
 import { verificationCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 import { setRefresher } from 'src/stores/certificate-legalization/certificateLegalizationSlice'
+import HeaderDialog from 'src/components/shared/dialog/header-dialog'
+import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import { LoadingButton } from '@mui/lab'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -45,12 +46,12 @@ const DialogVerification = ({ open, onClose, values }: VerificatioDialogProps) =
     dispatch(setRefresher())
   }
 
-  const handleVerification = async (action: 'USULAN_DITOLAK' | 'USULAN_DISETUJUI') => {
+  const onSubmit = async () => {
     setIsLoading(true)
     toast.loading('Verification...')
 
     const body: any = {
-      action: action
+      action: 'DISETUJUI'
     }
 
     // @ts-ignore
@@ -71,22 +72,19 @@ const DialogVerification = ({ open, onClose, values }: VerificatioDialogProps) =
 
   return (
     <>
-      <Dialog fullWidth open={open} maxWidth='sm' scroll='body' TransitionComponent={Transition}>
-        <DialogTitle sx={{ mb: 6, px: { xs: 8, sm: 15 }, position: 'relative', backgroundColor: '#F7F7F9' }}>
-          <IconButton
-            onClick={() => {
-              handleClose()
-            }}
-            sx={{ position: 'absolute', right: '1rem', top: '1rem' }}
-          >
-            <Icon icon='material-symbols:close' />
-          </IconButton>
-          <Box>
-            <Typography variant='h5' align='center'>
-              Verifikasi Pengajuan
-            </Typography>
-          </Box>
-        </DialogTitle>
+      <Dialog
+        fullWidth
+        open={open}
+        maxWidth='sm'
+        scroll='body'
+        TransitionComponent={Transition}
+        PaperProps={{
+          sx: {
+            borderRadius: '0px'
+          }
+        }}
+      >
+        <HeaderDialog title='Verifikasi Pengajuan' onClose={handleClose} />
 
         <DialogContent
           sx={{
@@ -135,31 +133,28 @@ const DialogVerification = ({ open, onClose, values }: VerificatioDialogProps) =
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ pb: { xs: 8, sm: 12.5 }, justifyContent: 'center', px: { xs: 8, sm: 15 } }}>
-          <Button
-            variant='contained'
-            color='error'
-            size='medium'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={() => setIsReject(true)}
-          >
+        <ActionDialog isDefault={false} isLoading={isLoading} onClose={handleClose}>
+          <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
             Tolak
           </Button>
-          <Button
-            type='submit'
+          <LoadingButton
             variant='contained'
             color='success'
-            disabled={isLoading}
-            sx={{ padding: { sm: '5px 20px', xs: '5px 15px' } }}
-            onClick={() => handleVerification('USULAN_DISETUJUI')}
+            onClick={onSubmit}
+            loading={isLoading}
+            loadingIndicator={<CircularProgress size={20} />}
           >
             Verifikasi
-          </Button>
-        </DialogActions>
+          </LoadingButton>
+        </ActionDialog>
       </Dialog>
 
-      <DialogReject open={isReject} onClose={(v: boolean) => setIsReject(v)} closeVerification={() => handleClose()} />
+      <DialogReject
+        open={isReject}
+        onClose={() => setIsReject(false)}
+        closeVerification={() => handleClose()}
+        values={values}
+      />
     </>
   )
 }

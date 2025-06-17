@@ -15,7 +15,7 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (user?.aksesLevelId) {
       api.get(`/acl/menu/${user.aksesLevelId}`).then(res => {
-        setMenu(res.data)
+        setMenu(res.data.content)
         window.localStorage.setItem('menuRole', JSON.stringify(res.data.content))
       })
     }

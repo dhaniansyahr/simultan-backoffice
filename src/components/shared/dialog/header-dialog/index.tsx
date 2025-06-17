@@ -13,7 +13,7 @@ const HeaderDialog = ({ onClose, title }: HeaderDialogProps) => {
         <Icon icon='material-symbols:close' color='white' />
       </IconButton>
       <Box>
-        <Typography variant='h5' align='center' sx={{ color: 'white' }}>
+        <Typography variant='h5' sx={{ color: 'white' }}>
           {title}
         </Typography>
       </Box>

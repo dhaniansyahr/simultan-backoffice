@@ -7,12 +7,6 @@ const navigation = (): VerticalNavItemsType => {
   const menuItems = menuFromStorage ? JSON.parse(menuFromStorage) : []
 
   // Always return dashboard along with menu items, regardless if menuItems is empty
-  return [
-    {
-      title: 'Dashboard',
-      path: '/dashboard'
-    },
-    ...(menuItems || []) // Use nullish coalescing to ensure we spread an array
-  ]
+  return menuItems || []
 }
 export default navigation

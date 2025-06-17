@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 export const formatMoney = (amount: number, currency = 'IDR') => {
   return amount.toLocaleString('id-ID', {
     style: 'currency',
@@ -60,7 +62,7 @@ export function getStatus(value: string): { text: string; color: string } {
     return { text: 'DITOLAK', color: '#FF0000' }
   }
 
-  return { text: formattedValue, color: 'default' }
+  return { text: formattedValue, color: '#6D788D' }
 }
 
 export function generateUlid() {
@@ -89,7 +91,7 @@ export const getDocument = (prefix: string): Promise<File | null> => {
       let newFile = null
 
       if (file) {
-        newFile = new File([file], `${prefix}-${generateUlid()}.${file?.name?.split('.')[1]}`, { type: file.type })
+        newFile = new File([file], `${prefix}_${createTimestamp()}.${file?.name?.split('.')[1]}`, { type: file.type })
       }
 
       document.body.removeChild(inputFile)
@@ -100,4 +102,8 @@ export const getDocument = (prefix: string): Promise<File | null> => {
 
 export function getFileNamefromURL(url: string) {
   return url?.split('/')?.pop()?.replace(/%20/g, ' ')
+}
+
+export function createTimestamp() {
+  return moment().format('YYYYMMDDHHmmss').toString()
 }
