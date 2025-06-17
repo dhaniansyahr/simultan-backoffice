@@ -47,10 +47,9 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
     setIsLoading(true)
     toast.loading('Verification...')
 
-    const body: any = {
-      action: 'DITOLAK',
-      reason: value?.reason
-    }
+    const body: any = Object.assign({}, value, {
+      action: 'DITOLAK'
+    })
 
     // @ts-ignore
     await dispatch(verificationCertificateLegalization({ data: body, id: values?.ulid })).then(res => {
@@ -81,7 +80,7 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
         }
       }}
     >
-      <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} color='error.main' />
+      <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} color='error.dark' />
 
       <form action='submit' onSubmit={onSubmit}>
         <DialogContent
@@ -104,7 +103,7 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
             <Grid item xs={12}>
               <Controller
                 control={control}
-                name='reason'
+                name='alasanPenolakan'
                 render={({ field, fieldState: { error } }) => (
                   <TextField
                     fullWidth

@@ -59,6 +59,7 @@ const DialogVerifikasi = ({ open, onClose, values }: VerificatioDialogProps) => 
         return
       }
 
+      setIsLoading(false)
       toast.dismiss()
       toast.success(res?.payload?.message)
       handleClose()
@@ -66,7 +67,14 @@ const DialogVerifikasi = ({ open, onClose, values }: VerificatioDialogProps) => 
   }
 
   return (
-    <Dialog fullWidth open={open} maxWidth='sm' scroll='body' TransitionComponent={Transition}>
+    <Dialog
+      fullWidth
+      open={open}
+      maxWidth='sm'
+      scroll='body'
+      TransitionComponent={Transition}
+      PaperProps={{ sx: { borderRadius: '0px' } }}
+    >
       <HeaderDialog title='Verifikasi Pengajuan' onClose={handleClose} />
 
       <form
@@ -119,13 +127,13 @@ const DialogVerifikasi = ({ open, onClose, values }: VerificatioDialogProps) => 
             </Grid>
             <Grid item xs={12}>
               <Typography variant='h5' align='center'>
-                Apakah anda ingin melakukan verifikasi pada pengajuan ini?
+                Apakah anda yakin ingin melakukan verifikasi pada pengajuan ini?
               </Typography>
             </Grid>
           </Grid>
         </DialogContent>
 
-        <ActionDialog isLoading={isLoading} onClose={handleClose} />
+        <ActionDialog isLoading={isLoading} onClose={handleClose} isDefault={true} />
       </form>
     </Dialog>
   )

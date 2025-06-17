@@ -107,3 +107,58 @@ export function getFileNamefromURL(url: string) {
 export function createTimestamp() {
   return moment().format('YYYYMMDDHHmmss').toString()
 }
+
+export interface DownloadBlobOptions {
+  data: Blob
+  filename: string
+  headers?: any
+}
+
+export interface DownloadBlobResult {
+  url: string
+  filename: string
+  message: string
+}
+
+export const downloadBlob = (options: DownloadBlobOptions): DownloadBlobResult => {
+  const { data, filename: defaultFilename, headers } = options
+
+  console.log('Download blob data size:', data.size)
+  console.log('Download blob data type:', data.type)
+
+  // Check if response data is empty
+  if (!data || data.size === 0) {
+    throw new Error('PDF response is empty. Please check if the document exists.')
+  }
+
+  let filename = defaultFilename
+
+  // Try to get filename from content-disposition if available
+  if (headers?.['content-disposition']) {
+    const disposition = headers['content-disposition']
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+    const matches = filenameRegex.exec(disposition)
+    if (matches && matches[1]) {
+      filename = matches[1].replace(/['"]/g, '')
+    }
+  }
+
+  // Create download link and trigger click
+  const blob = new Blob([data], { type: data.type || 'application/pdf' })
+  console.log('Created blob size:', blob.size)
+
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a) // This line is important for some browsers
+  a.click()
+  document.body.removeChild(a) // Clean up
+  URL.revokeObjectURL(url)
+
+  return {
+    url,
+    filename,
+    message: `Successfully downloaded ${filename}!`
+  }
+}

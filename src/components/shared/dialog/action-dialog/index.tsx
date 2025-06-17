@@ -10,7 +10,7 @@ interface ActionDialogProps {
 }
 
 const ActionDialog = (props: ActionDialogProps) => {
-  const { isDefault, isLoading, children, onClose } = props
+  const { isDefault = true, isLoading, children, onClose } = props
 
   return (
     <DialogActions

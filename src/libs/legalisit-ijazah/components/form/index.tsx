@@ -152,7 +152,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
       <Grid item xs={12}>
         <Controller
           control={control}
-          name='buktiPembayarnUrl'
+          name='buktiPembayaran'
           render={({ field, formState: { errors } }) => (
             <>
               <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
@@ -181,10 +181,10 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
                         console.log(file)
 
                         if (file) {
-                          handleUploadDocument('buktiPembayaranUrl', file)
+                          handleUploadDocument('buktiPembayaran', file)
                         }
                       }}
-                      loading={isLoadFile === 'buktiPembayaranUrl'}
+                      loading={isLoadFile === 'buktiPembayaran'}
                       disabled={isLoadFile !== ''}
                       loadingIndicator={<CircularProgress size={20} />}
                     >

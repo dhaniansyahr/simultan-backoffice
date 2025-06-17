@@ -11,11 +11,7 @@ export default function TableYudisium() {
 
   const { data, isLoading, page, pageSize, columns, setPage, setPageSize } = useTable()
 
-  const isDisable = data?.entries?.some(
-    (item: any) =>
-      item?.verifikasiStatus === 'DIPROSES OLEH OPERATOR AKADEMIK' ||
-      item?.verifikasiStatus === 'DIPROSES OLEH KASUBBAG AKADEMIK'
-  )
+  const isDisable = data?.entries?.some((item: any) => item?.verifikasiStatus?.includes('DIPROSES'))
 
   const onPaginationModelChange = (newModel: any) => {
     setPage(newModel.page + 1)

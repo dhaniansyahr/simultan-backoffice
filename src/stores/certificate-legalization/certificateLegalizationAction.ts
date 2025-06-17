@@ -65,3 +65,16 @@ export const verificationCertificateLegalization = createAsyncThunk(
     }
   }
 )
+
+export const processCertificateLegalization = createAsyncThunk(
+  'CertificateLegalization/process',
+  async ({ data, id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/legalisir-ijazah/proses/${id}`, data)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)

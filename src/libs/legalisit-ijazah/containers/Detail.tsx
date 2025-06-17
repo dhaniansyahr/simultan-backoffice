@@ -10,12 +10,13 @@ import Can from 'src/components/acl/Can'
 import { getCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 import DialogVerifikasi from '../components/dialogs/DialogVerifikasi'
 import DialogPenolakan from '../components/dialogs/DialogPenolakan'
+import DialogProses from '../components/dialogs/DialogProses'
 
 export default function DetailContainer() {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { refresher } = useAppSelector(state => state.collegeCertificate)
+  const { refresher } = useAppSelector(state => state.certificateLegalization)
 
   const { id } = router.query as { id: string }
 
@@ -24,6 +25,7 @@ export default function DetailContainer() {
 
   const [isReject, setIsReject] = useState(false)
   const [isVerify, setIsVerify] = useState(false)
+  const [isProcess, setIsProcess] = useState(false)
 
   const handleGetData = async () => {
     setIsLoading(true)
@@ -45,6 +47,14 @@ export default function DetailContainer() {
     handleGetData()
   }, [id, refresher])
 
+  const verificationOrProcess = () => {
+    if (data?.verifikasiStatus === 'LEGALISIR IJAZAH SEDANG DIPROSES') {
+      setIsProcess(true)
+    } else {
+      setIsVerify(true)
+    }
+  }
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -53,15 +63,19 @@ export default function DetailContainer() {
           isDetail={true}
           action={
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Can I='VERIFICATION' a='SURAT_KETERANGAN_KULIAH'>
-                <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
-                  Tolak
-                </Button>
+              {data?.verifikasiStatus !== 'SELESAI' && (
+                <Can I='VERIFICATION' a='LEGALISIR_IJAZAH'>
+                  {data?.verifikasiStatus !== 'LEGALISIR IJAZAH SEDANG DIPROSES' && (
+                    <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
+                      Tolak
+                    </Button>
+                  )}
 
-                <Button variant='contained' color='primary' onClick={() => setIsVerify(true)}>
-                  Verifikasi
-                </Button>
-              </Can>
+                  <Button variant='contained' color='primary' onClick={verificationOrProcess}>
+                    {data?.verifikasiStatus === 'LEGALISIR IJAZAH SEDANG DIPROSES' ? 'Proses' : 'Verifikasi'}
+                  </Button>
+                </Can>
+              )}
             </Box>
           }
         />
@@ -275,13 +289,9 @@ export default function DetailContainer() {
                             </Typography>
                           </Grid>
                           <Grid item xs={8}>
-                            <Link
-                              href={data?.buktiPembayaranUrl ?? ''}
-                              target='_blank'
-                              style={{ textDecoration: 'none' }}
-                            >
-                              <Typography variant='body1' color={'text.secondary'}>
-                                {getFileNamefromURL(data?.buktiPembayaranUrl ?? '') || '-'}
+                            <Link href={data?.buktiPembayaran ?? ''} target='_blank' style={{ textDecoration: 'none' }}>
+                              <Typography variant='body1' color={'blue'}>
+                                {getFileNamefromURL(data?.buktiPembayaran ?? '') || '-'}
                               </Typography>
                             </Link>
                           </Grid>
@@ -372,6 +382,8 @@ export default function DetailContainer() {
       <DialogVerifikasi open={isVerify} onClose={() => setIsVerify(false)} values={data} />
 
       <DialogPenolakan open={isReject} onClose={() => setIsReject(false)} values={data} />
+
+      <DialogProses open={isProcess} onClose={() => setIsProcess(false)} values={data} />
     </Grid>
   )
 }

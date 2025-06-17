@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material'
+import { Box, TextField } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
@@ -9,10 +9,12 @@ import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
-import { setRefresher } from 'src/stores/graduation-submission/graduationSubmissionSlice'
-import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import { processCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
+import { setRefresher } from 'src/stores/certificate-legalization/certificateLegalizationSlice'
 import HeaderDialog from 'src/components/shared/dialog/header-dialog'
-import { verificationGraduationSubmission } from 'src/stores/graduation-submission/graduationSubmissionAction'
+import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import DatePickerInput from 'src/components/shared/date-input'
+import moment from 'moment'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -23,14 +25,13 @@ const Transition = forwardRef(function Transition(
 
 interface RejectVerificatioProps {
   open: boolean
-  onClose: (v: boolean) => void
+  onClose: () => void
   values: any
 }
 
-const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
+const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
   const dispatch: AppDispatch = useDispatch()
 
-  // const { user } = useAuth()
   const { control, handleSubmit, reset } = useForm()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -38,7 +39,7 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
   const handleClose = () => {
     setIsLoading(false)
     reset()
-    onClose(false)
+    onClose()
 
     // @ts-ignore
     dispatch(setRefresher())
@@ -46,14 +47,14 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
 
   const onSubmit = handleSubmit(async (value: any) => {
     setIsLoading(true)
-    toast.loading('Waiting ...')
+    toast.loading('Verification...')
 
     const body: any = Object.assign({}, value, {
-      action: 'DITOLAK'
+      tanggalPengambilan: moment(value?.tanggalPengambilan).format('YYYY-MM-DD')
     })
 
     // @ts-ignore
-    await dispatch(verificationGraduationSubmission({ data: body, id: values?.ulid })).then(res => {
+    await dispatch(processCertificateLegalization({ data: body, id: values?.ulid })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)
@@ -75,9 +76,13 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
       maxWidth='sm'
       scroll='body'
       TransitionComponent={Transition}
-      PaperProps={{ sx: { borderRadius: '0px' } }}
+      PaperProps={{
+        sx: {
+          borderRadius: '0px'
+        }
+      }}
     >
-      <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} color='error.dark' />
+      <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} />
 
       <form action='submit' onSubmit={onSubmit}>
         <DialogContent
@@ -98,33 +103,41 @@ const DialogPenolakan = ({ open, onClose, values }: RejectVerificatioProps) => {
             }}
           >
             <Grid item xs={12}>
+              <DatePickerInput
+                name='tanggalPengambilian'
+                control={control}
+                rules={{ required: 'Tanggal pengambilan harus diisi!' }}
+                label='Tanggal Pengambilan'
+                placeholder='YYYY-MM-DD'
+                dateFormat='yyyy-MM-dd'
+                popperContainer={({ children }) => <Box sx={{ position: 'fixed', zIndex: 99999 }}>{children}</Box>}
+              />
+            </Grid>
+            <Grid item xs={12}>
               <Controller
                 control={control}
-                name='alasanPenolakan'
+                name='tempatPengambilan'
                 render={({ field, fieldState: { error } }) => (
                   <TextField
                     fullWidth
                     required
-                    multiline
-                    rows={4}
-                    label='Alasan'
-                    placeholder='Masukan Alasan'
+                    label='Tempat Pengambilan'
+                    placeholder='Masukan Tempat Pengambilan'
                     value={field.value ?? ''}
                     onChange={field.onChange}
                     error={!!error}
                     helperText={error?.message}
                   />
                 )}
-                rules={{ required: 'Alasan pengajuan harus diisi!' }}
+                rules={{ required: 'Tempat pengambilan harus diisi!' }}
               />
             </Grid>
           </Grid>
         </DialogContent>
-
-        <ActionDialog isLoading={isLoading} onClose={handleClose} isDefault={true} />
+        <ActionDialog isDefault={true} isLoading={isLoading} onClose={handleClose} />
       </form>
     </Dialog>
   )
 }
 
-export default DialogPenolakan
+export default DialogProses

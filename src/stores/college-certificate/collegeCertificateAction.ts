@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import api from 'src/service/api'
+import { downloadBlob } from 'src/utils'
 
 export const getAllCollegeCertificate = createAsyncThunk(
   'collegeCertificate/getAll',
@@ -107,34 +108,24 @@ export const printCollegeCertificate = createAsyncThunk(
         }
       }
 
-      // Handle successful PDF blob
-      let filename = 'surat-keterangan-kuliah.pdf'
+      // Use utility function to download blob
+      try {
+        const result = downloadBlob({
+          data: response.data,
+          filename: 'surat-keterangan-kuliah.pdf',
+          headers: response.headers
+        })
 
-      // Try to get filename from content-disposition if available
-      const disposition = response.headers['content-disposition']
-      if (disposition) {
-        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-        const matches = filenameRegex.exec(disposition)
-        if (matches && matches[1]) {
-          filename = matches[1].replace(/['"]/g, '')
+        return {
+          url: result.url,
+          filename: result.filename,
+          message: 'Successfully printed surat keterangan kuliah!'
         }
-      }
-
-      // Create download link and trigger click
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a) // This line is important for some browsers
-      a.click()
-      document.body.removeChild(a) // Clean up
-      URL.revokeObjectURL(url)
-
-      return {
-        url,
-        filename,
-        message: 'Successfully printed surat keterangan kuliah!'
+      } catch (downloadError: any) {
+        return rejectWithValue({
+          message: downloadError.message || 'An error occurred while downloading the document',
+          response: { data: { message: downloadError.message } }
+        })
       }
     } catch (error: any) {
       // Handle error response if it's a blob

@@ -53,15 +53,17 @@ export default function DetailContainer() {
           isDetail={true}
           action={
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Can I='VERIFICATION' a='SURAT_KETERANGAN_KULIAH'>
-                <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
-                  Tolak
-                </Button>
+              {data?.verifikasiStatus !== 'DISETUJUI' && (
+                <Can I='VERIFICATION' a='PENGAJUAN_YUDISIUM'>
+                  <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
+                    Tolak
+                  </Button>
 
-                <Button variant='contained' color='primary' onClick={() => setIsVerify(true)}>
-                  Verifikasi
-                </Button>
-              </Can>
+                  <Button variant='contained' color='primary' onClick={() => setIsVerify(true)}>
+                    Verifikasi
+                  </Button>
+                </Can>
+              )}
             </Box>
           }
         />

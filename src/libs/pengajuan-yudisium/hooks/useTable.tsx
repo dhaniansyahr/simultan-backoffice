@@ -6,8 +6,10 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import Can from 'src/components/acl/Can'
-import { printCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
-import { getAllGraduationSubmission } from 'src/stores/graduation-submission/graduationSubmissionAction'
+import {
+  exportGraduationSubmission,
+  getAllGraduationSubmission
+} from 'src/stores/graduation-submission/graduationSubmissionAction'
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
@@ -153,7 +155,7 @@ export const useTable = () => {
     toast.loading('Printing...')
 
     // @ts-ignore
-    await dispatch(printCollegeCertificate({ id })).then((res: any) => {
+    await dispatch(exportGraduationSubmission({ id })).then((res: any) => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)

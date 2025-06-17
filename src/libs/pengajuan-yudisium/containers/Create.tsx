@@ -43,16 +43,11 @@ const CreateContainer = () => {
     setIsLoadFile('')
   }
 
-  const onSubmit = handleSubmit(async (values: any) => {
+  const onSubmit = handleSubmit(async (value: any) => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
-    const body: any = {
-      suratPendaftaranUrl: values.suratPendaftaranUrl,
-      suratBebasLab: values.suratBebasLab,
-      suratDistribusiSkripsi: values.suratDistribusiSkripsi,
-      suratPendaftaranIkaUrl: values.suratPendaftaranIkaUrl
-    }
+    const body: any = Object.assign({}, value)
 
     // @ts-ignore
     await dispatch(createGraduationSubmission({ data: body })).then((res: any) => {
