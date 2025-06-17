@@ -103,7 +103,7 @@ const AddForm = (props: AddFormProps) => {
                       variant='outlined'
                       color='primary'
                       onClick={async () => {
-                        const file = await getDocument(`${user?.nomorIdentitas}`)
+                        const file = await getDocument(`skak_${user?.nomorIdentitas}`)
 
                         console.log(file)
 

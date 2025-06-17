@@ -47,11 +47,7 @@ const CollegeCertificateCreate = () => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
-    const body: any = {
-      tipeSurat: value?.tipe?.value,
-      dokumenUrl: value?.dokumenUrl,
-      deskripsi: value?.description
-    }
+    const body: any = Object.assign({}, value)
 
     // @ts-ignore
     await dispatch(createCollegeCertificate({ data: body })).then((res: any) => {
