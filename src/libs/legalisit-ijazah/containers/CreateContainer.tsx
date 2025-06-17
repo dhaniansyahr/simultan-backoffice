@@ -47,13 +47,7 @@ const CreateContainer = () => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
-    const body: any = {
-      totalLegalisir: value?.totalLegalisir,
-      namaBank: value?.namaBank,
-      namaRekening: value?.namaRekening,
-      nomorRekening: value?.nomorRekening,
-      buktiPembayaranUrl: value?.buktiPembayaranUrl
-    }
+    const body: any = Object.assign({}, value)
 
     // @ts-ignore
     await dispatch(createCertificateLegalization({ data: body })).then((res: any) => {
