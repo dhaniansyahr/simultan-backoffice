@@ -74,12 +74,12 @@ export function generateUlid() {
   return (timestampPart + randomPart).toUpperCase()
 }
 
-export const getDocument = (prefix: string): Promise<File | null> => {
+export const getDocument = (prefix: string, accept = 'application/pdf'): Promise<File | null> => {
   return new Promise(resolve => {
     const inputFile = document.createElement('input')
 
     inputFile.type = 'file'
-    inputFile.accept = 'application/pdf'
+    inputFile.accept = accept
     inputFile.style.display = 'none'
 
     document.body.appendChild(inputFile)

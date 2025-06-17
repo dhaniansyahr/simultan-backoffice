@@ -14,11 +14,37 @@ export const getAllCertificateLegalization = createAsyncThunk(
   }
 )
 
+export const getCertificateLegalization = createAsyncThunk(
+  'CertificateLegalization/get',
+  async ({ id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/legalisir-ijazah/${id}`)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
 export const createCertificateLegalization = createAsyncThunk(
   'CertificateLegalization/create',
   async ({ data }: any, { rejectWithValue }) => {
     try {
       const response = await api.post('/legalisir-ijazah', data)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
+export const updateCertificateLegalization = createAsyncThunk(
+  'CertificateLegalization/update',
+  async ({ data, id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/legalisir-ijazah/${id}`, data)
 
       return response.data
     } catch (error) {

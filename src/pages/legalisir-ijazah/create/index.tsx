@@ -1,5 +1,12 @@
-import CreateContainer from 'src/libs/certificate-legalization/containers/CreateContainer'
+import CreateContainer from 'src/libs/legalisit-ijazah/containers/CreateContainer'
 
-export default function Create() {
+const CreatePage = () => {
   return <CreateContainer />
 }
+
+CreatePage.acl = {
+  action: 'CREATE',
+  subject: 'LEGALISIR_IJAZAH'
+}
+
+export default CreatePage

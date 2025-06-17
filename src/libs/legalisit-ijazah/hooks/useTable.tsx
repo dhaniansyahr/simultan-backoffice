@@ -5,7 +5,7 @@ import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import Can from 'src/components/acl/Can'
-import { getAllTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
+import { getAllCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
@@ -13,7 +13,7 @@ export const useTable = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { refresher } = useAppSelector(state => state.temporaryLeaveRequest)
+  const { refresher } = useAppSelector(state => state.certificateLegalization)
 
   const [data, setData] = useState<any>(null)
 
@@ -89,15 +89,15 @@ export const useTable = () => {
 
         return (
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Can I='VIEW' a='CUTI_SEMENTARA'>
-              <IconButton onClick={() => router.push(`/pengajuan-cuti-sementara/detail/${params?.row?.ulid}`)}>
+            <Can I='VIEW' a='LEGALISIR_IJAZAH'>
+              <IconButton onClick={() => router.push(`/legalisir-ijazah/detail/${params?.row?.ulid}`)}>
                 <Icon icon='ph:eye' color='primary' />
               </IconButton>
             </Can>
 
-            <Can I='UPDATE' a='CUTI_SEMENTARA'>
+            <Can I='UPDATE' a='LEGALISIR_IJAZAH'>
               <IconButton
-                onClick={() => router.push(`/pengajuan-cuti-sementara/edit/${params?.row?.ulid}`)}
+                onClick={() => router.push(`/legalisir-ijazah/edit/${params?.row?.ulid}`)}
                 disabled={status.text !== 'DITOLAK'}
               >
                 <Icon icon='mdi:pencil-outline' color='primary' />
@@ -120,7 +120,7 @@ export const useTable = () => {
     } as any
 
     // @ts-ignore
-    await dispatch(getAllTemporaryLeaveRequest({ data: body })).then((res: any) => {
+    await dispatch(getAllCertificateLegalization({ data: body })).then((res: any) => {
       if (
         !(res.payload.content?.entries ?? []).some((obj: any) =>
           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)

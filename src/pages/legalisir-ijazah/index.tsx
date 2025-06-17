@@ -1,4 +1,4 @@
-import CertificateLegalizationContainer from 'src/libs/certificate-legalization/containers'
+import CertificateLegalizationContainer from 'src/libs/legalisit-ijazah/containers'
 
 const CertificateLegalizationPage = () => {
   return <CertificateLegalizationContainer />

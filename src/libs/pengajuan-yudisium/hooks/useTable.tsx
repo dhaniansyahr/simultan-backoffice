@@ -1,11 +1,13 @@
 import { Icon } from '@iconify/react'
 import { Box, Chip, IconButton } from '@mui/material'
-import { GridRenderCellParams } from '@mui/x-data-grid'
+import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import Can from 'src/components/acl/Can'
-import { getAllTemporaryLeaveRequest } from 'src/stores/temporary-leave-request/temporaryLeaveRequestAction'
+import { printCollegeCertificate } from 'src/stores/college-certificate/collegeCertificateAction'
+import { getAllGraduationSubmission } from 'src/stores/graduation-submission/graduationSubmissionAction'
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
@@ -13,7 +15,7 @@ export const useTable = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { refresher } = useAppSelector(state => state.temporaryLeaveRequest)
+  const { refresher } = useAppSelector(state => state.graduationSubmission)
 
   const [data, setData] = useState<any>(null)
 
@@ -21,7 +23,7 @@ export const useTable = () => {
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
 
-  const columns = [
+  const columns: GridColDef[] = [
     {
       flex: 0.25,
       field: 'no',
@@ -82,25 +84,31 @@ export const useTable = () => {
       flex: 0.25,
       field: 'action',
       headerName: 'ACTION',
-      minWidth: 260,
+      minWidth: 160,
       sortable: false,
       renderCell: (params: any) => {
         const status = getStatus(params?.row?.verifikasiStatus ?? '-')
 
         return (
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Can I='VIEW' a='CUTI_SEMENTARA'>
-              <IconButton onClick={() => router.push(`/pengajuan-cuti-sementara/detail/${params?.row?.ulid}`)}>
+            <Can I='VIEW' a='PENGAJUAN_YUDISIUM'>
+              <IconButton onClick={() => router.push(`/pengajuan-yudisium/detail/${params?.row?.ulid}`)}>
                 <Icon icon='ph:eye' color='primary' />
               </IconButton>
             </Can>
 
-            <Can I='UPDATE' a='CUTI_SEMENTARA'>
+            <Can I='UPDATE' a='PENGAJUAN_YUDISIUM'>
               <IconButton
-                onClick={() => router.push(`/pengajuan-cuti-sementara/edit/${params?.row?.ulid}`)}
+                onClick={() => router.push(`/pengajuan-yudisium/edit/${params?.row?.ulid}`)}
                 disabled={status.text !== 'DITOLAK'}
               >
                 <Icon icon='mdi:pencil-outline' color='primary' />
+              </IconButton>
+            </Can>
+
+            <Can I='EXPORT' a='PENGAJUAN_YUDISIUM'>
+              <IconButton onClick={() => handleDownloadSurat(params?.row?.ulid)} disabled={status.text !== 'DISETUJUI'}>
+                <Icon icon='ic:baseline-print' color='primary' />
               </IconButton>
             </Can>
           </Box>
@@ -120,7 +128,7 @@ export const useTable = () => {
     } as any
 
     // @ts-ignore
-    await dispatch(getAllTemporaryLeaveRequest({ data: body })).then((res: any) => {
+    await dispatch(getAllGraduationSubmission({ data: body })).then((res: any) => {
       if (
         !(res.payload.content?.entries ?? []).some((obj: any) =>
           (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
@@ -141,6 +149,23 @@ export const useTable = () => {
     setIsLoading(false)
   }
 
+  const handleDownloadSurat = async (id: string) => {
+    toast.loading('Printing...')
+
+    // @ts-ignore
+    await dispatch(printCollegeCertificate({ id })).then((res: any) => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.dismiss()
+        toast.error(res?.payload?.response?.data?.message)
+
+        return
+      }
+
+      toast.dismiss()
+      toast.success(res?.payload?.message)
+    })
+  }
+
   useEffect(() => {
     setPage(1)
 
@@ -154,11 +179,11 @@ export const useTable = () => {
   }, [page, pageSize])
 
   return {
+    columns,
     data,
     isLoading,
     page,
     pageSize,
-    columns,
     setPage,
     setPageSize
   }
