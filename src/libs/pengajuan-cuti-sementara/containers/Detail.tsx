@@ -172,7 +172,7 @@ export default function DetailContainer() {
                       </Grid>
                       <Grid item xs={8}>
                         <Link
-                          href={data?.suratPersetujuanOrangTuaUrl ?? ''}
+                          href={data?.suratIzinOrangTuaUrl ?? ''}
                           target='_blank'
                           style={{ textDecoration: 'none' }}
                         >
@@ -297,7 +297,14 @@ export default function DetailContainer() {
                                         alignItems: 'center'
                                       }}
                                     >
-                                      <Typography variant='body1'>{formatString(item?.nama ?? '-')}</Typography>
+                                      {getStatus(item?.nama)?.text === "DITOLAK" ? (
+                                        
+                                          <Typography variant='body1'>{formatString(item?.nama ?? '-')} : {data?.alasanPenolakan}</Typography>
+                                      ) : (
+                                        <Typography variant='body1'>
+                                          {formatString(item?.nama ?? '-')}
+                                        </Typography>
+                                      )}
                                     </Box>
                                   </Grid>
                                 </Grid>

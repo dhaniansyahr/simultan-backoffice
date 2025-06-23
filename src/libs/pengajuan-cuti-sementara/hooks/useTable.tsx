@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Box, Chip, IconButton } from '@mui/material'
+import { Box, Chip, IconButton, Tooltip } from '@mui/material'
 import { GridRenderCellParams } from '@mui/x-data-grid'
 import moment from 'moment'
 import { useRouter } from 'next/router'
@@ -88,22 +88,28 @@ export const useTable = () => {
         const status = getStatus(params?.row?.verifikasiStatus ?? '-')
 
         return (
-          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
             <Can I='VIEW' a='CUTI_SEMENTARA'>
-              <IconButton onClick={() => router.push(`/pengajuan-cuti-sementara/detail/${params?.row?.ulid}`)}>
-                <Icon icon='ph:eye' color='primary' />
+              <Tooltip title="View/Lihat History">
+              <IconButton 
+              onClick={() => router.push(`/pengajuan-cuti-sementara/detail/${params?.row?.ulid}`)}
+              >
+              <Icon icon='ph:eye' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
 
             <Can I='UPDATE' a='CUTI_SEMENTARA'>
+              <Tooltip title='Edit/Perubahan Pengajuan'>
               <IconButton
-                onClick={() => router.push(`/pengajuan-cuti-sementara/edit/${params?.row?.ulid}`)}
-                disabled={status.text !== 'DITOLAK'}
+              onClick={() => router.push(`/pengajuan-cuti-sementara/edit/${params?.row?.ulid}`)}
+              disabled={status.text !== 'DITOLAK'}
               >
-                <Icon icon='mdi:pencil-outline' color='primary' />
+              <Icon icon='mdi:pencil-outline' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
-          </Box>
+            </Box>
         )
       }
     }

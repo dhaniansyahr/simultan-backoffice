@@ -1,11 +1,11 @@
-import { Box, TextField } from '@mui/material'
+import { Box  } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
 import Grid from '@mui/material/Grid'
 import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
@@ -113,7 +113,7 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
                 popperContainer={({ children }) => <Box sx={{ position: 'fixed', zIndex: 99999 }}>{children}</Box>}
               />
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Controller
                 control={control}
                 name='tempatPengambilan'
@@ -131,7 +131,7 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
                 )}
                 rules={{ required: 'Tempat pengambilan harus diisi!' }}
               />
-            </Grid>
+            </Grid> */}
           </Grid>
         </DialogContent>
         <ActionDialog isDefault={true} isLoading={isLoading} onClose={handleClose} />

@@ -1,6 +1,6 @@
 import { LoadingButton } from '@mui/lab'
-import { CircularProgress, Grid, TextField, Typography } from '@mui/material'
-import React from 'react'
+import { CircularProgress, Grid, MenuItem, Select, TextField, Typography } from '@mui/material'
+import React, { useEffect, useState } from 'react'
 import { Control, Controller } from 'react-hook-form'
 import { useAuth } from 'src/hooks/useAuth'
 import { getDocument } from 'src/utils'
@@ -11,8 +11,38 @@ interface FormLegalisirIjazahProps {
   isLoadFile: string
 }
 
+interface OpsiPengambilan {
+  value: string
+  label: string
+}
+
 const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: FormLegalisirIjazahProps) => {
   const { user } = useAuth()
+  const [opsiPengambilan, setOpsiPengambilan] = useState<OpsiPengambilan[]>([])
+  const [isLoadingOpsi, setIsLoadingOpsi] = useState(false)
+
+  useEffect(() => {
+    const fetchOpsiPengambilan = async () => {
+      setIsLoadingOpsi(true)
+      try {
+        const response = await fetch('/legalisir-ijazah')
+        const data = await response.json()
+        
+        // Sesuaikan dengan struktur response dari API Anda
+        setOpsiPengambilan(data.opsiPengambilan || [])
+      } catch (error) {
+        console.error('Error fetching opsi pengambilan:', error)
+        setOpsiPengambilan([
+          { value: 'Via_POS', label: 'Via POS' },
+          { value: 'Ambil_Langsung_DiFakultas', label: 'Ambil Langsung Di Fakultas' }
+        ])
+      } finally {
+        setIsLoadingOpsi(false)
+      }
+    }
+
+    fetchOpsiPengambilan()
+  }, [])
 
   return (
     <Grid container spacing={4}>
@@ -107,8 +137,8 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
                 placeholder='Masukan Nama sesuai rekening bank'
                 fullWidth
                 {...field}
-                error={!!errors.nama}
-                helperText={errors.nama?.message as string}
+                error={!!errors.namaRekening}
+                helperText={errors.namaRekening?.message as string}
               />
             </>
           )}
@@ -194,14 +224,107 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
                 }}
                 helperText={'Format file: JPG, JPEG, PNG; Max 10 MB'}
               />
-              {errors.buktiPembayaranUrl && (
+              {errors.buktiPembayaran && (
                 <Typography variant='body1' sx={{ color: 'red' }}>
-                  {errors.buktiPembayaranUrl.message as string}
+                  {errors.buktiPembayaran.message as string}
                 </Typography>
               )}
             </>
           )}
           rules={{ required: 'Bukti Pembayaran harus diisi' }}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Controller
+          control={control}
+          name='buktiIjazah'
+          render={({ field, formState: { errors } }) => (
+            <>
+              <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+                Upload Ijazah
+              </Typography>
+              <TextField
+                fullWidth
+                value={field.value ? field.value.split('/').pop()?.replace(/%20/g, ' ') : 'Pilih file'}
+                inputProps={{
+                  readOnly: true
+                }}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    bgcolor: '#fff'
+                  }
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <LoadingButton
+                      sx={{ whiteSpace: 'nowrap' }}
+                      variant='outlined'
+                      color='primary'
+                      onClick={async () => {
+                        const file = await getDocument(`bukti_ijazah_${user?.nomorIdentitas}`, 'image/*')
+
+                        console.log(file)
+
+                        if (file) {
+                          handleUploadDocument('buktiIjazah', file)
+                        }
+                      }}
+                      loading={isLoadFile === 'buktiIjazah'}
+                      disabled={isLoadFile !== ''}
+                      loadingIndicator={<CircularProgress size={20} />}
+                    >
+                      Pilih File
+                    </LoadingButton>
+                  )
+                }}
+                helperText={'Format file: JPG, JPEG, PNG; Max 10 MB'}
+              />
+              {errors.buktiIjazah && (
+                <Typography variant='body1' sx={{ color: 'red' }}>
+                  {errors.buktiIjazah.message as string}
+                </Typography>
+              )}
+            </>
+          )}
+          rules={{ required: 'Ijazah harus diisi' }}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Controller
+          control={control}
+          name='tempatPengambilan'
+          render={({ field, formState: { errors } }) => (
+        <>
+          <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
+            Tempat Pengambilan
+          </Typography>
+          <Select
+            fullWidth
+            value={field.value}
+            onChange={field.onChange}
+            displayEmpty
+            disabled={isLoadingOpsi}
+            inputProps={{ 'aria-label': 'Without label' }}
+          >
+            <MenuItem value='' disabled>
+              <em>{isLoadingOpsi ? 'Loading...' : 'Pilih Tempat Pengambilan Legalisir Ijazah'}</em>
+            </MenuItem>
+            {opsiPengambilan.map(opsi => (
+          <MenuItem key={opsi.value} value={opsi.value}>
+            {opsi.label}
+          </MenuItem>
+            ))}
+          </Select>
+          {errors.tempatPengambilan && (
+            <Typography variant='body1' sx={{ color: 'red' }}>
+          {errors.tempatPengambilan.message as string}
+            </Typography>
+          )}
+        </>
+          )}
+          rules={{ required: 'Tempat pengambilan harus dipilih' }}
         />
       </Grid>
     </Grid>

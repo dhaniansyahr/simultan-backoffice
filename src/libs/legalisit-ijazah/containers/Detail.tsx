@@ -196,8 +196,65 @@ export default function DetailContainer() {
                             </Typography>
                           </Grid>
                         </Grid>
-                      </Box>
+                        </Box>
+                      </Grid>
+  
+                      <Grid item xs={12}>
+                        <Box
+                          sx={{
+                            borderBottom: '1px solid #4C4E6438',
+                            paddingBottom: 2
+                          }}
+                        >
+                          <Grid container spacing={2}>
+                            <Grid item xs={4}>
+                              <Typography variant='body1' fontWeight={500}>
+                                Bukti Ijazah
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                              <Link href={data?.buktiIjazah ?? ''} target='_blank' style={{ textDecoration: 'none' }}>
+                                <Typography variant='body1' color={'blue'}>
+                                  {getFileNamefromURL(data?.buktiIjazah ?? '') || '-'}
+                                </Typography>
+                              </Link>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </Grid>
+  
+                      <Grid item xs={12}>
+                        <Box
+                          sx={{
+                            borderBottom: '1px solid #4C4E6438',
+                            paddingBottom: 2
+                          }}
+                        >
+                          <Grid container spacing={2}>
+                            <Grid item xs={4}>
+                              <Typography variant='body1' fontWeight={500}>
+                                Tempat Pengambilan
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box
+                                  sx={{
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: '50%',
+                                    backgroundColor: '#1976d2'
+                                  }}
+                                />
+                                <Typography variant='body1' color={'text.secondary'} fontWeight={500}>
+                                  {data?.tempatPengambilan || '-'}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </Box>
                     </Grid>
+                    
                   </Grid>
                 </Grid>
 
@@ -301,9 +358,23 @@ export default function DetailContainer() {
                   </Grid>
                 </Grid>
 
+                 {/* tambahkan link untuk masuk ke website pddikti */}
+
                 <Grid item xs={12}>
                   <Grid container spacing={4}>
                     <Grid item xs={12}>
+                      <Typography variant='h6' sx={{ fontWeight: 600, mb: 2 }}>
+                        Cek Keabsahan Kelulusan Mahasiswa
+                        </Typography>
+                        <Link 
+                        href="https://pddikti.kemdikbud.go.id/data_mahasiswa"
+                        target="_blank"
+                        style={{ textDecoration: 'none' }}
+                        >
+                        <Button variant="outlined" sx={{ mb: 4 }}>
+                          Cek di PDDIKTI
+                        </Button>
+                        </Link>
                       <Typography variant='h6' sx={{ fontWeight: 600 }}>
                         History Status
                       </Typography>
@@ -361,7 +432,14 @@ export default function DetailContainer() {
                                         alignItems: 'center'
                                       }}
                                     >
-                                      <Typography variant='body1'>{formatString(item?.nama ?? '-')}</Typography>
+                                       {getStatus(item?.nama)?.text === "DITOLAK" ? (
+                                        
+                                          <Typography variant='body1'>{formatString(item?.nama ?? '-')} : {data?.alasanPenolakan}</Typography>
+                                      ) : (
+                                        <Typography variant='body1'>
+                                          {formatString(item?.nama ?? '-')}
+                                        </Typography>
+                                      )}
                                     </Box>
                                   </Grid>
                                 </Grid>

@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Box, Chip, IconButton } from '@mui/material'
+import { Box, Chip, IconButton, Tooltip } from '@mui/material'
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import moment from 'moment'
 import { useRouter } from 'next/router'
@@ -92,28 +92,39 @@ export const useTable = () => {
         const status = getStatus(params?.row?.verifikasiStatus ?? '-')
 
         return (
-          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
             <Can I='VIEW' a='SURAT_KETERANGAN_KULIAH'>
-              <IconButton onClick={() => router.push(`/surat-keterangan-aktif-kuliah/detail/${params?.row?.ulid}`)}>
-                <Icon icon='ph:eye' color='primary' />
+              <Tooltip title='Lihat detail pengajuan'>
+              <IconButton 
+              onClick={() => router.push(`/surat-keterangan-aktif-kuliah/detail/${params?.row?.ulid}`)}
+              >
+              <Icon icon='ph:eye' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
 
             <Can I='UPDATE' a='SURAT_KETERANGAN_KULIAH'>
+              <Tooltip title='Edit/Perubahan Pengajuan'>
               <IconButton
-                onClick={() => router.push(`/surat-keterangan-aktif-kuliah/edit/${params?.row?.ulid}`)}
-                disabled={status.text !== 'DITOLAK'}
+              onClick={() => router.push(`/surat-keterangan-aktif-kuliah/edit/${params?.row?.ulid}`)}
+              disabled={status.text !== 'DITOLAK'}
               >
-                <Icon icon='mdi:pencil-outline' color='primary' />
+              <Icon icon='mdi:pencil-outline' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
 
             <Can I='EXPORT' a='SURAT_KETERANGAN_KULIAH'>
-              <IconButton onClick={() => handleDownloadSurat(params?.row?.ulid)} disabled={status.text !== 'DISETUJUI'}>
-                <Icon icon='ic:baseline-print' color='primary' />
+              <Tooltip title='Download/Unduh'>
+              <IconButton
+              onClick={() => handleDownloadSurat(params?.row?.ulid)}
+              disabled={status.text !== 'DISETUJUI'}
+              >
+              <Icon icon='ic:baseline-print' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
-          </Box>
+            </Box>
         )
       }
     }
