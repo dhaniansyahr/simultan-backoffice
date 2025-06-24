@@ -13,7 +13,7 @@ export type Subjects =
   | 'DASHBOARD'
 
 // ** Action Types
-export type Actions = 'CREATE' | 'UPDATE' | 'VIEW' | 'EXPORT' | 'VERIFICATION'
+export type Actions = 'CREATE' | 'UPDATE' | 'VIEW' | 'EXPORT' | 'VERIFICATION' | 'NOMOR_SURAT'
 
 // ** Define AppAbility type
 export type AppAbility = PureAbility<[Actions, Subjects]>

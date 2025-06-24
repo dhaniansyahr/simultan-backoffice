@@ -1,5 +1,5 @@
 import { LoadingButton } from '@mui/lab'
-import { Button, Box, Grid } from '@mui/material'
+import { Button, Box, Grid, CircularProgress } from '@mui/material'
 import { useRouter } from 'next/router'
 
 interface ActionPageProps {
@@ -19,7 +19,7 @@ const ActionPage = (props: ActionPageProps) => {
         <Button type='button' variant='contained' color='secondary' size='medium' onClick={onBack}>
           Batal
         </Button>
-        <LoadingButton type='submit' variant='contained' loading={isLoading} disabled={isLoading}>
+         <LoadingButton type='submit' variant='contained' loading={isLoading} disabled={isLoading} loadingIndicator={<CircularProgress size={24} />}>
           Simpan
         </LoadingButton>
       </Box>

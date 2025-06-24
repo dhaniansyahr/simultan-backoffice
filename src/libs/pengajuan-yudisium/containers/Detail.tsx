@@ -288,9 +288,9 @@ export default function DetailContainer() {
                 <Grid item xs={12} sx={{ mt: 4 }}>
                   <Grid container spacing={4}>
                     <Grid item xs={12}>
-                      <Typography variant='h6' sx={{ fontWeight: 600 }}>
+                        <Typography variant='h6' sx={{ fontWeight: 600 }}>
                         History Status
-                      </Typography>
+                        </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Grid container spacing={2}>
@@ -345,7 +345,13 @@ export default function DetailContainer() {
                                         alignItems: 'center'
                                       }}
                                     >
-                                      <Typography variant='body1'>{formatString(item?.nama ?? '-')}</Typography>
+                                      {getStatus(item?.nama)?.text === 'DITOLAK' ? (
+                                        <Typography variant='body1'>
+                                          {formatString(item?.nama ?? '-')} : {data?.alasanPenolakan}
+                                        </Typography>
+                                      ) : (
+                                        <Typography variant='body1'>{formatString(item?.nama ?? '-')}</Typography>
+                                      )}
                                     </Box>
                                   </Grid>
                                 </Grid>

@@ -199,7 +199,13 @@ const FormSection = ({ control, handleUploadDocument, isLoadFile }: FormSectionP
                 type='text'
                 placeholder='Masukan Alasan Pengambilan Cuti'
                 value={field.value ?? ''}
-                onChange={e => field.onChange(e.target.value)}
+                onChange={e => {
+                  const words = e.target.value.trim().split(/\s+/)
+                  if (words.length <= 50) {
+                    field.onChange(e.target.value)
+                  }
+                }}
+                 helperText='Maksimal 50 Kata'
               />
               {errors.reason && (
                 <Typography variant='body1' sx={{ color: 'red' }}>

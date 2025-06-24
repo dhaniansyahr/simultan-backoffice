@@ -109,6 +109,26 @@ const CreateContainer = () => {
                       <Typography variant='body2'>
                         Biaya legalisir ijazah adalah sebesar Rp. 10.000,- per buah.
                       </Typography>
+                      </li>
+                    <li>
+                      <Typography variant='body2'>
+                        Untuk wilayah banda aceh dan aceh besar, diwajibkan untuk melakukan pengambilan di fakultas pertanian
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant='body2'>
+                        Untuk di luar banda aceh, aceh besar serta termasuk wilayah diluar aceh, pengambilan ijazah akan dilakukan melalui jasa kurir.
+                      </Typography>
+                      <li>
+                        <Typography variant='body2'>
+                         Pilih jasa pengiriman pos untuk wilayah selain banda aceh dan aceh besar.
+                        </Typography>
+                      </li>
+                      <li>
+                        <Typography variant='body2'>
+                          Pilih ambil langsung untuk wilayah banda aceh dan aceh besar.
+                        </Typography>
+                      </li>
                     </li>
                   </ul>
                 </Typography>

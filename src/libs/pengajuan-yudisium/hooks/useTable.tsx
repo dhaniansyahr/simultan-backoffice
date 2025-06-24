@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react'
-import { Box, Chip, IconButton } from '@mui/material'
+import { Box, Chip, IconButton, Tooltip } from '@mui/material'
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import moment from 'moment'
 import { useRouter } from 'next/router'
@@ -94,24 +94,33 @@ export const useTable = () => {
         return (
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Can I='VIEW' a='PENGAJUAN_YUDISIUM'>
-              <IconButton onClick={() => router.push(`/pengajuan-yudisium/detail/${params?.row?.ulid}`)}>
-                <Icon icon='ph:eye' color='primary' />
-              </IconButton>
+              <Tooltip title='Lihat detail pengajuan'>
+                <IconButton onClick={() => router.push(`/pengajuan-yudisium/detail/${params?.row?.ulid}`)}>
+                  <Icon icon='ph:eye' color='primary' />
+                </IconButton>
+              </Tooltip>
             </Can>
 
             <Can I='UPDATE' a='PENGAJUAN_YUDISIUM'>
-              <IconButton
-                onClick={() => router.push(`/pengajuan-yudisium/edit/${params?.row?.ulid}`)}
-                disabled={status.text !== 'DITOLAK'}
-              >
-                <Icon icon='mdi:pencil-outline' color='primary' />
-              </IconButton>
+              <Tooltip title='Edit/lakukan perubahan'>
+                <IconButton
+                  onClick={() => router.push(`/pengajuan-yudisium/edit/${params?.row?.ulid}`)}
+                  disabled={status.text !== 'DITOLAK'}
+                >
+                  <Icon icon='mdi:pencil-outline' color='primary' />
+                </IconButton>
+              </Tooltip>
             </Can>
 
             <Can I='EXPORT' a='PENGAJUAN_YUDISIUM'>
-              <IconButton onClick={() => handleDownloadSurat(params?.row?.ulid)} disabled={status.text !== 'DISETUJUI'}>
+              <Tooltip title='Download/unggah surat yudisium'>
+              <IconButton
+                onClick={() => handleDownloadSurat(params?.row?.ulid)}
+                disabled={status.text !== 'DISETUJUI'}
+              >
                 <Icon icon='ic:baseline-print' color='primary' />
               </IconButton>
+              </Tooltip>
             </Can>
           </Box>
         )
