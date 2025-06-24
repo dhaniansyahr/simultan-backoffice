@@ -15,6 +15,20 @@ export const getAllCollegeCertificate = createAsyncThunk(
   }
 )
 
+// untuk menampilkan seluruh data (history)
+export const getAllCollegeCertificateHistory = createAsyncThunk(
+  'collegeCertificate/getAllHistory',
+  async ({ data }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/surat-keterangan-kuliah/history', data)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
 export const getCollegeCertificate = createAsyncThunk(
   'collegeCertificate/getDetail',
   async ({ id }: { id: string }, { rejectWithValue }) => {
@@ -72,6 +86,20 @@ export const inputNomorSurat = createAsyncThunk(
   async ({ data, id }: any, { rejectWithValue }) => {
     try {
       const response = await api.put(`/surat-keterangan-kuliah/${id}/input-nomor-surat`, data)
+
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error)
+    }
+  }
+)
+
+//edit nomor surat
+export const editNomorSurat = createAsyncThunk(
+  'collegeCertificate/editNomorSurat',
+  async ({ data, id }: any, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/surat-keterangan-kuliah/${id}/nomor-surat`, data)
 
       return response.data
     } catch (error) {

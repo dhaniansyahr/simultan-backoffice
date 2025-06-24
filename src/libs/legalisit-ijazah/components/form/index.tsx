@@ -21,27 +21,27 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
   const [opsiPengambilan, setOpsiPengambilan] = useState<OpsiPengambilan[]>([])
   const [isLoadingOpsi, setIsLoadingOpsi] = useState(false)
 
-  useEffect(() => {
-    const fetchOpsiPengambilan = async () => {
-      setIsLoadingOpsi(true)
-      try {
-        const response = await fetch('/legalisir-ijazah')
-        const data = await response.json()
-        
-        // Sesuaikan dengan struktur response dari API Anda
-        setOpsiPengambilan(data.opsiPengambilan || [])
-      } catch (error) {
-        console.error('Error fetching opsi pengambilan:', error)
-        setOpsiPengambilan([
-          { value: 'Via_POS', label: 'Via POS' },
-          { value: 'Ambil_Langsung_DiFakultas', label: 'Ambil Langsung Di Fakultas' }
-        ])
-      } finally {
-        setIsLoadingOpsi(false)
-      }
+  const handleGetOpsiPengambilan = async () => {
+    setIsLoadingOpsi(true)
+    try {
+      
+      setOpsiPengambilan([
+        { value: 'Via_POS', label: 'Via POS' },
+        { value: 'Ambil_Langsung_DiFakultas', label: 'Ambil Langsung Di Fakultas' }
+      ])
+    } catch (error) {
+      console.error('Error fetching opsi pengambilan:', error)
+      setOpsiPengambilan([
+        { value: 'Via_POS', label: 'Via POS' },
+        { value: 'Ambil_Langsung_DiFakultas', label: 'Ambil Langsung Di Fakultas' }
+      ])
+    } finally {
+      setIsLoadingOpsi(false)
     }
+  }
 
-    fetchOpsiPengambilan()
+  useEffect(() => {
+    handleGetOpsiPengambilan()
   }, [])
 
   return (
