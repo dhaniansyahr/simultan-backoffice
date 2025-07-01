@@ -14,8 +14,6 @@ import {
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
-
-
 export const useTable = (type: string) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -63,22 +61,23 @@ export const useTable = (type: string) => {
       }
     },
 
-          {
-            flex: 0.25,
-            field: 'nomorSurat',
-            headerName: 'Nomor Surat',
-            minWidth: 200,
-            sortable: false,
-            renderCell: (params: any) => {
-              // return getAllHistory
-              return (
-                <span>
-                  {params?.row?.nomorSurat ?? '-'} - {params?.row?.tanggalSurat ? moment(params?.row?.tanggalSurat).format('DD MMMM YYYY') : '-'}
-                </span>
-              )
-            }
-          },
-        
+    {
+      flex: 0.25,
+      field: 'nomorSurat',
+      headerName: 'Nomor Surat',
+      minWidth: 200,
+      sortable: false,
+      renderCell: (params: any) => {
+        // return getAllHistory
+        return (
+          <span>
+            {params?.row?.nomorSurat ?? '-'} -{' '}
+            {params?.row?.tanggalSurat ? moment(params?.row?.tanggalSurat).format('DD MMMM YYYY') : '-'}
+          </span>
+        )
+      }
+    },
+
     {
       flex: 0.25,
       field: 'status',
@@ -146,25 +145,8 @@ export const useTable = (type: string) => {
                 </IconButton>
               </Tooltip>
             </Can>
-
-             <Box sx={{ display: 'flex', gap: 1 }}>
-            <Can I='NOMOR_SURAT' a='SURAT_KETERANGAN_KULIAH'>
-              <Tooltip title='Edit Nomor Surat'>
-                <IconButton
-                    onClick={() => router.push(`/surat-keterangan-aktif-kuliah/${params?.row?.ulid}nomor-surat`)}
-                    disabled={status.text !== 'DISETUJUI'}
-                    size='small'
-                  >
-                   <Icon icon='mdi:format-list-numbered' color='primary' />
-                </IconButton>
-              </Tooltip>
-            </Can>
-
-           
-          </Box>
           </Box>
         )
-        
       }
     }
   ]

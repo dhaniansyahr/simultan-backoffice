@@ -24,7 +24,6 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
   const handleGetOpsiPengambilan = async () => {
     setIsLoadingOpsi(true)
     try {
-      
       setOpsiPengambilan([
         { value: 'Via_POS', label: 'Via POS' },
         { value: 'Ambil_Langsung_DiFakultas', label: 'Ambil Langsung Di Fakultas' }
@@ -296,33 +295,33 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           control={control}
           name='tempatPengambilan'
           render={({ field, formState: { errors } }) => (
-        <>
-          <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
-            Tempat Pengambilan
-          </Typography>
-          <Select
-            fullWidth
-            value={field.value}
-            onChange={field.onChange}
-            displayEmpty
-            disabled={isLoadingOpsi}
-            inputProps={{ 'aria-label': 'Without label' }}
-          >
-            <MenuItem value='' disabled>
-              <em>{isLoadingOpsi ? 'Loading...' : 'Pilih Tempat Pengambilan Legalisir Ijazah'}</em>
-            </MenuItem>
-            {opsiPengambilan.map(opsi => (
-          <MenuItem key={opsi.value} value={opsi.value}>
-            {opsi.label}
-          </MenuItem>
-            ))}
-          </Select>
-          {errors.tempatPengambilan && (
-            <Typography variant='body1' sx={{ color: 'red' }}>
-          {errors.tempatPengambilan.message as string}
-            </Typography>
-          )}
-        </>
+            <>
+              <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
+                Tempat Pengambilan
+              </Typography>
+              <Select
+                fullWidth
+                value={field.value}
+                onChange={field.onChange}
+                displayEmpty
+                disabled={isLoadingOpsi}
+                inputProps={{ 'aria-label': 'Without label' }}
+              >
+                <MenuItem value='' disabled>
+                  <em>{isLoadingOpsi ? 'Loading...' : 'Pilih Tempat Pengambilan Legalisir Ijazah'}</em>
+                </MenuItem>
+                {opsiPengambilan.map(opsi => (
+                  <MenuItem key={opsi.value} value={opsi.value}>
+                    {opsi.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.tempatPengambilan && (
+                <Typography variant='body1' sx={{ color: 'red' }}>
+                  {errors.tempatPengambilan.message as string}
+                </Typography>
+              )}
+            </>
           )}
           rules={{ required: 'Tempat pengambilan harus dipilih' }}
         />

@@ -254,8 +254,31 @@ export default function DetailContainer() {
                           </Grid>
                         </Box>
                     </Grid>
-                    
-                  </Grid>
+                      {/* tanggalPengambilan */}
+                      <Grid item xs={12}>
+                        <Box
+                          sx={{
+                            borderBottom: '1px solid #4C4E6438',
+                            paddingBottom: 2
+                          }}
+                        >
+                          <Grid container spacing={2}>
+                            <Grid item xs={4}>
+                              <Typography variant='body1' fontWeight={500}>
+                                Tanggal Pengambilan
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                              <Typography variant='body1' color={'text.secondary'}>
+                                {data?.tanggalPengambilan
+                                  ? moment(data?.tanggalPengambilan).format('DD MMMM YYYY')
+                                  : '-'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </Grid>
+                    </Grid>
                 </Grid>
 
                 <Grid item xs={6}>

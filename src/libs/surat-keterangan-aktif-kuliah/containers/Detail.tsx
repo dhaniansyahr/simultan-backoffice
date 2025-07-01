@@ -11,6 +11,7 @@ import DialogVerifikasi from '../components/dialogs/DialogVerifikasi'
 import DialogPenolakan from '../components/dialogs/DialogPenolakan'
 import Can from 'src/components/acl/Can'
 import InputNomorSuratDialog from '../components/dialogs/InputNomorSuratDialog'
+import EditNomorSuratDialog from '../components/dialogs/DialogEditNomorSurat'
 
 export default function DetailContainer() {
   const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ export default function DetailContainer() {
   const [isReject, setIsReject] = useState(false)
   const [isVerify, setIsVerify] = useState(false)
   const [isInputNomorSurat, setIsInputNomorSurat] = useState(false)
+  const [isEditNomorSurat, setIsEditNomorSurat] = useState(false)
 
   const handleGetData = async () => {
     setIsLoading(true)
@@ -48,15 +50,24 @@ export default function DetailContainer() {
   }, [id, refresher])
 
   const onVerificationOrInputNomorSurat = () => {
-    if (data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR KEMAHASISWAAN') {
-      setIsInputNomorSurat(true)
-    } else {
-      setIsVerify(true)
-    }
+  if (data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR KEMAHASISWAAN') {
+    setIsInputNomorSurat(true)
+  } else {
+    setIsVerify(true)
+  }
+}
+
+const onInputNomorSurat = () => {
+  setIsInputNomorSurat(true)
+}
+
+// Separate function for edit nomor surat (when already approved)
+  const onEditNomorSurat = () => {
+    setIsEditNomorSurat(true)
   }
 
-  return (
-    <Grid container spacing={2}>
+return (
+  <Grid container spacing={2}>
       <Grid item xs={12}>
         <HeaderPage
           title='Detail Pengajuan Surat Keterangan Aktif Kuliah'
@@ -64,15 +75,36 @@ export default function DetailContainer() {
           action={
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Can I='VERIFICATION' a='SURAT_KETERANGAN_KULIAH'>
-                <Button variant='outlined' color='error' onClick={() => setIsReject(true)}>
+                <Button 
+                  variant='outlined' 
+                  color='error' 
+                  onClick={() => setIsReject(true)}
+                  disabled={data?.verifikasiStatus === 'DISETUJUI'}
+                >
                   Tolak
                 </Button>
 
-                <Button variant='contained' color='primary' onClick={onVerificationOrInputNomorSurat}>
-                  {data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR KEMAHASISWAAN'
-                    ? 'Input Nomor Surat'
-                    : 'Verifikasi'}
-                </Button>
+                {/* Show Verifikasi button only when not in specific status */}
+                {data?.verifikasiStatus !== 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR KEMAHASISWAAN' && 
+                 data?.verifikasiStatus !== 'DISETUJUI' && (
+                  <Button variant='contained' color='primary' onClick={onVerificationOrInputNomorSurat}>
+                    Verifikasi
+                  </Button>
+                )}
+
+                {/* Show Input Nomor Surat button when status is SEDANG INPUT */}
+                {data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR KEMAHASISWAAN' && (
+                  <Button variant='contained' color='primary' onClick={onInputNomorSurat}>
+                    Input Nomor Surat
+                  </Button>
+                )}
+
+                {/* Show Edit Nomor Surat button when status is DISETUJUI */}
+                {data?.verifikasiStatus === 'DISETUJUI' && (
+                  <Button variant='contained' color='primary' onClick={onEditNomorSurat}>
+                    Edit Nomor Surat
+                  </Button>
+                )}
               </Can>
             </Box>
           }
@@ -306,7 +338,16 @@ export default function DetailContainer() {
         values={data}
       />
 
+      {/* Edit Nomor Surat Dialog - for editing existing nomor surat */}
+      <EditNomorSuratDialog 
+        open={isEditNomorSurat} 
+        onClose={() => setIsEditNomorSurat(false)} 
+        values={data} 
+      />
+
       <InputNomorSuratDialog open={isInputNomorSurat} onClose={() => setIsInputNomorSurat(false)} values={data} />
+      {/* editnomorsurat */}
+      <EditNomorSuratDialog open={isEditNomorSurat} onClose={() => setIsEditNomorSurat(false)} values={data} />
     </Grid>
   )
 }
