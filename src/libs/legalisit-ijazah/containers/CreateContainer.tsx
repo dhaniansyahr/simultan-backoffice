@@ -94,7 +94,18 @@ const CreateContainer = () => {
                   <ul>
                     <li>
                       <Typography variant='body2'>
-                        Maksimal Jumlah Legalisir Ijazah yang dapat diajukan adalah 10 (sepuluh) buah.
+                        Maksimal Jumlah Legalisir Ijazah yang dapat diajukan adalah minimal 5 dan maksimal 20.
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant='body2'>
+                        Untuk via pos dapat dilakukan untuk wilayah Banda Aceh, Aceh Besar dan luar Aceh.
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant='body2'>
+                        Untuk wilayah Banda Aceh dan Aceh Besar, diwajibkan untuk melakukan pengambilan di Fakultas
+                        Pertanian.
                       </Typography>
                     </li>
                     <li>
@@ -107,29 +118,10 @@ const CreateContainer = () => {
                     </li>
                     <li>
                       <Typography variant='body2'>
-                        Biaya legalisir ijazah adalah sebesar Rp. 10.000,- per buah.
-                      </Typography>
-                      </li>
-                    <li>
-                      <Typography variant='body2'>
-                        Untuk wilayah banda aceh dan aceh besar, diwajibkan untuk melakukan pengambilan di fakultas pertanian
+                        Biaya legalisir ijazah adalah sebesar Rp. 2.500,- per buah.
                       </Typography>
                     </li>
-                    <li>
-                      <Typography variant='body2'>
-                        Untuk di luar banda aceh, aceh besar serta termasuk wilayah diluar aceh, pengambilan ijazah akan dilakukan melalui jasa kurir.
-                      </Typography>
-                      <li>
-                        <Typography variant='body2'>
-                         Pilih jasa pengiriman pos untuk wilayah selain banda aceh dan aceh besar.
-                        </Typography>
-                      </li>
-                      <li>
-                        <Typography variant='body2'>
-                          Pilih ambil langsung untuk wilayah banda aceh dan aceh besar.
-                        </Typography>
-                      </li>
-                    </li>
+                      
                   </ul>
                 </Typography>
               </Card>
@@ -141,7 +133,7 @@ const CreateContainer = () => {
                 <Grid container spacing={4}>
                   <Grid item xs={12}>
                     <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                      Informasi Pembayaran
+                     Pembayaran Ongkos Pengiriman Legalisir Ijazah
                     </Typography>
                   </Grid>
 
@@ -173,6 +165,70 @@ const CreateContainer = () => {
                         <Grid item xs={8}>
                           <Typography variant='body1' color='initial'>
                             : Fakultas Pertanian USK
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box>
+                      <Grid container spacing={4}>
+                        <Grid item xs={4}>
+                          <Typography variant='body1' color='initial'>
+                            Nomor Rekening
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <Typography variant='body1' color='initial'>
+                            : 1234567890
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Card>
+
+              <Card
+                variant='outlined'
+                sx={{ padding: '16px', backgroundColor: theme => hexToRGBA(theme.palette.grey[500], 0.12) }}
+              >
+                <Grid container spacing={4}>
+                  <Grid item xs={12}>
+                    <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                      Pembayaran Legalisir Ijazah
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box>
+                      <Grid container spacing={4}>
+                        <Grid item xs={4}>
+                          <Typography variant='body1' color='initial'>
+                            Nama Bank
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <Typography variant='body1' color='initial'>
+                            : Bank BSI
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box>
+                      <Grid container spacing={4}>
+                        <Grid item xs={4}>
+                          <Typography variant='body1' color='initial'>
+                            Nama Rekening
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <Typography variant='body1' color='initial'>
+                            : Biro Akademik USK
                           </Typography>
                         </Grid>
                       </Grid>

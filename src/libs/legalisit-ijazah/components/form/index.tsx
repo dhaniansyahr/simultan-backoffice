@@ -21,6 +21,25 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
   const [opsiPengambilan, setOpsiPengambilan] = useState<OpsiPengambilan[]>([])
   const [isLoadingOpsi, setIsLoadingOpsi] = useState(false)
 
+  const [totalHarga, setTotalHarga] = useState<number>(0)
+
+  // Price per unit
+  const HARGA_SATUAN = 2500
+
+  // Function to calculate total price
+  const calculateTotalPrice = (quantity: number): number => {
+    return quantity * HARGA_SATUAN
+  }
+
+  // Function to format currency
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount)
+  }
+
   const handleGetOpsiPengambilan = async () => {
     setIsLoadingOpsi(true)
     try {
@@ -55,41 +74,80 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
                 Jumlah Legalisir
               </Typography>
 
-              <TextField
-                placeholder='Jumlah Legalisir'
+              <Select
                 fullWidth
-                type='number'
-                inputProps={{
-                  min: 1,
-                  pattern: '[0-9]*',
-                  max: 10
-                }}
-                onKeyPress={e => {
-                  if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault()
-                  }
-                }}
+                value={field.value || ''}
                 onChange={e => {
-                  const value = parseInt(e.target.value)
-                  if (value > 10) {
-                    field.onChange(10)
+                  field.onChange(e)
+
+                  const quantity = Number(e.target.value)
+                  if (quantity > 0) {
+                    setTotalHarga(calculateTotalPrice(quantity))
                   } else {
-                    field.onChange(value)
+                    setTotalHarga(0)
                   }
                 }}
-                value={field.value}
+                displayEmpty
+                inputProps={{ 'aria-label': 'Without label' }}
                 error={!!errors.totalLegalisir}
-                helperText={errors.totalLegalisir?.message as string}
-              />
+              >
+                <MenuItem value='' disabled>
+                  <em>Pilih Jumlah Legalisir</em>
+                </MenuItem>
+                <MenuItem value={5}>5 Lembar</MenuItem>
+                <MenuItem value={10}>10 Lembar</MenuItem>
+                <MenuItem value={15}>15 Lembar</MenuItem>
+                <MenuItem value={20}>20 Lembar</MenuItem>
+              </Select>
+              {errors.totalLegalisir && (
+                <Typography variant='body1' sx={{ color: 'red' }}>
+                  {errors.totalLegalisir.message as string}
+                </Typography>
+              )}
             </>
           )}
           rules={{
-            required: 'Jumlah Legalisir harus diisi',
-            max: {
-              value: 10,
-              message: 'Maksimal jumlah legalisir adalah 10'
-            }
+            required: 'Jumlah Legalisir harus diisi'
           }}
+        />
+      </Grid>
+
+      <Grid item xs={6}>
+        <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+          Harga Satuan
+        </Typography>
+        <Typography variant='body1' sx={{ color: 'text.secondary' }}>
+          {formatCurrency(HARGA_SATUAN)} per lembar
+        </Typography>
+      </Grid>
+
+      <Grid item xs={6}>
+        <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+          Total Harga
+        </Typography>
+        <Typography
+          variant='h6'
+          sx={{
+            color: totalHarga > 0 ? 'primary.main' : 'text.secondary',
+            fontWeight: 'bold'
+          }}
+        >
+          {totalHarga > 0 ? formatCurrency(totalHarga) : 'Rp 0'}
+        </Typography>
+      </Grid>
+
+      {/* Hidden field to store total price */}
+      <Grid item xs={12} sx={{ display: 'none' }}>
+        <Controller
+          control={control}
+          name='totalHarga'
+          render={({ field }) => (
+            <TextField
+              {...field}
+              value={totalHarga}
+              onChange={() => {}} // Read-only, controlled by totalLegalisir
+            />
+          )}
         />
       </Grid>
 
@@ -99,7 +157,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
         </Typography>
       </Grid>
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Controller
           control={control}
           name='namaBank'
@@ -120,9 +178,9 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           )}
           rules={{ required: 'Nama Bank harus diisi' }}
         />
-      </Grid>
+      </Grid> */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Controller
           control={control}
           name='namaRekening'
@@ -143,9 +201,9 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           )}
           rules={{ required: 'Nama Rekening harus diisi' }}
         />
-      </Grid>
+      </Grid> */}
 
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <Controller
           control={control}
           name='nomorRekening'
@@ -176,7 +234,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           )}
           rules={{ required: 'Nomor Rekening harus diisi' }}
         />
-      </Grid>
+      </Grid> */}
 
       <Grid item xs={12}>
         <Controller
@@ -295,37 +353,113 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           control={control}
           name='tempatPengambilan'
           render={({ field, formState: { errors } }) => (
-            <>
-              <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
-                Tempat Pengambilan
-              </Typography>
-              <Select
-                fullWidth
-                value={field.value}
-                onChange={field.onChange}
-                displayEmpty
-                disabled={isLoadingOpsi}
-                inputProps={{ 'aria-label': 'Without label' }}
-              >
-                <MenuItem value='' disabled>
-                  <em>{isLoadingOpsi ? 'Loading...' : 'Pilih Tempat Pengambilan Legalisir Ijazah'}</em>
-                </MenuItem>
-                {opsiPengambilan.map(opsi => (
-                  <MenuItem key={opsi.value} value={opsi.value}>
-                    {opsi.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.tempatPengambilan && (
-                <Typography variant='body1' sx={{ color: 'red' }}>
-                  {errors.tempatPengambilan.message as string}
-                </Typography>
-              )}
-            </>
+        <>
+          <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
+            Tempat Pengambilan
+          </Typography>
+          <Select
+            fullWidth
+            value={field.value}
+            onChange={field.onChange}
+            displayEmpty
+            disabled={isLoadingOpsi}
+            inputProps={{ 'aria-label': 'Without label' }}
+            error={!!errors.tempatPengambilan}
+          >
+            <MenuItem value='' disabled>
+          <em>{isLoadingOpsi ? 'Loading...' : 'Pilih Tempat Pengambilan Legalisir Ijazah'}</em>
+            </MenuItem>
+            {opsiPengambilan.map(opsi => (
+          <MenuItem key={opsi.value} value={opsi.value}>
+            {opsi.label}
+          </MenuItem>
+            ))}
+          </Select>
+          <Typography variant='body2' sx={{ color: 'text.secondary', mt: 0.5 }}>
+            Pilih Via POS jika ingin dikirim ke alamat atau Ambil Langsung jika ingin mengambil di fakultas
+          </Typography>
+          {errors.tempatPengambilan && (
+            <Typography variant='body1' sx={{ color: 'red' }}>
+          {errors.tempatPengambilan.message as string}
+            </Typography>
+          )}
+        </>
           )}
           rules={{ required: 'Tempat pengambilan harus dipilih' }}
         />
       </Grid>
+
+      {/* Show upload form when Via POS is selected */}
+      <Controller
+        control={control}
+        name='tempatPengambilan'
+        render={({ field }) =>
+          field.value === 'Via_POS' ? (
+            <Grid item xs={12}>
+              <Controller
+                control={control}
+                name='buktiPembayaranOngkir'
+                render={({ field: uploadField, formState: { errors } }) => (
+                  <>
+                    <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+                      Upload Bukti Biaya Pengiriman
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      value={
+                        uploadField.value ? uploadField.value.split('/').pop()?.replace(/%20/g, ' ') : 'Pilih file'
+                      }
+                      inputProps={{
+                        readOnly: true
+                      }}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          bgcolor: '#fff'
+                        }
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <LoadingButton
+                            sx={{ whiteSpace: 'nowrap' }}
+                            variant='outlined'
+                            color='primary'
+                            onClick={async () => {
+                              const file = await getDocument(
+                                `bukti_biaya_pengiriman_${user?.nomorIdentitas}`,
+                                'image/*'
+                              )
+
+                              if (file) {
+                                handleUploadDocument('buktiPembayaranOngkir', file)
+                              }
+                            }}
+                            loading={isLoadFile === 'buktiPembayaranOngkir'}
+                            disabled={isLoadFile !== ''}
+                            loadingIndicator={<CircularProgress size={20} />}
+                          >
+                            Pilih File
+                          </LoadingButton>
+                        )
+                      }}
+                      helperText={'Format file: JPG, JPEG, PNG; Max 10 MB'}
+                    />
+                    {errors.buktiPembayaranOngkir && (
+                      <Typography variant='body1' sx={{ color: 'red' }}>
+                        {errors.buktiPembayaranOngkir.message as string}
+                      </Typography>
+                    )}
+                  </>
+                )}
+                rules={{
+                  required: field.value === 'Via_POS' ? 'Bukti Biaya Pengiriman harus diisi' : false
+                }}
+              />
+            </Grid>
+          ) : (
+            <></>
+          )
+        }
+      />
     </Grid>
   )
 }

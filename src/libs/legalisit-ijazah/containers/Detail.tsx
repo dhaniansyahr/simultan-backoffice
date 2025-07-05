@@ -289,7 +289,7 @@ export default function DetailContainer() {
                       </Typography>
                     </Grid>
 
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                       <Box
                         sx={{
                           borderBottom: '1px solid #4C4E6438',
@@ -309,9 +309,9 @@ export default function DetailContainer() {
                           </Grid>
                         </Grid>
                       </Box>
-                    </Grid>
+                    </Grid> */}
 
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                       <Box
                         sx={{
                           borderBottom: '1px solid #4C4E6438',
@@ -331,9 +331,9 @@ export default function DetailContainer() {
                           </Grid>
                         </Grid>
                       </Box>
-                    </Grid>
+                    </Grid> */}
 
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                       <Box
                         sx={{
                           borderBottom: '1px solid #4C4E6438',
@@ -353,7 +353,7 @@ export default function DetailContainer() {
                           </Grid>
                         </Grid>
                       </Box>
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12}>
                       <Box
@@ -378,6 +378,31 @@ export default function DetailContainer() {
                         </Grid>
                       </Box>
                     </Grid>
+
+                    <Grid item xs={12}>
+                      <Box
+                      sx={{
+                        borderBottom: '1px solid #4C4E6438',
+                        paddingBottom: 2
+                      }}
+                      >
+                      <Grid container spacing={2}>
+                        <Grid item xs={4}>
+                        <Typography variant='body1' fontWeight={500}>
+                          Bukti Pembayaran Ongkir
+                        </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                        <Link href={data?.buktiPembayaranOngkir ?? ''} target='_blank' style={{ textDecoration: 'none' }}>
+                          <Typography variant='body1' color={'blue'}>
+                          {getFileNamefromURL(data?.buktiPembayaranOngkir ?? '') || '-'}
+                          </Typography>
+                        </Link>
+                        </Grid>
+                      </Grid>
+                      </Box>
+                    </Grid>
+
                   </Grid>
                 </Grid>
 
