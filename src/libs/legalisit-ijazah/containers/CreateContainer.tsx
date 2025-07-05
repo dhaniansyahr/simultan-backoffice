@@ -121,6 +121,12 @@ const CreateContainer = () => {
                         Biaya legalisir ijazah adalah sebesar Rp. 2.500,- per buah.
                       </Typography>
                     </li>
+                    <li>
+                      <Typography variant='body2'>
+                        Biaya ongkos pengiriman via pos adalah sebesar Rp. 10.000,- untuk wilayah Banda Aceh dan Aceh
+                        Besar, dan Rp. 20.000,- untuk wilayah luar Aceh.
+                      </Typography>
+                    </li>
                       
                   </ul>
                 </Typography>
