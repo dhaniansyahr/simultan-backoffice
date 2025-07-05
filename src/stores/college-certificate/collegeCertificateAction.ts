@@ -99,7 +99,7 @@ export const editNomorSurat = createAsyncThunk(
   'collegeCertificate/editNomorSurat',
   async ({ data, id }: any, { rejectWithValue }) => {
     try {
-      const response = await api.patch(`/surat-keterangan-kuliah/${id}/nomor-surat`, data)
+      const response = await api.patch(`/surat-keterangan-kuliah/${id}/edit-nomor-surat`, data)
 
       return response.data
     } catch (error) {

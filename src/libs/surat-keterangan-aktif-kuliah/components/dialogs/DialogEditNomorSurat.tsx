@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux'
 import { setRefresher } from 'src/stores/college-certificate/certificateLegalizationSlice'
 import HeaderDialog from 'src/components/shared/dialog/header-dialog'
 import ActionDialog from 'src/components/shared/dialog/action-dialog'
+import { editNomorSurat } from 'src/stores/college-certificate/collegeCertificateAction'
 
 const Transition = forwardRef(function Transition(
   props: FadeProps & { children?: ReactElement<any, any> },
@@ -62,7 +63,7 @@ const EditNomorSuratDialog = ({ open, onClose, values }: EditNomorSuratDialogPro
     }
 
     // @ts-ignore
-    await dispatch(updateNomorSurat({ data: body, id: values?.ulid })).then(res => {
+    await dispatch(editNomorSurat({ data: body, id: values?.ulid })).then(res => {
       if (res?.meta?.requestStatus !== 'fulfilled') {
         toast.dismiss()
         toast.error(res?.payload?.response?.data?.message)

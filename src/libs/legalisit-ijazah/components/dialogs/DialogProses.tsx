@@ -82,7 +82,7 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
         }
       }}
     >
-      <HeaderDialog title='Penolakan Pengajuan' onClose={handleClose} />
+      <HeaderDialog title='Tanggal Pengambilan Legalisir Ijazah' onClose={handleClose} />
 
       <form action='submit' onSubmit={onSubmit}>
         <DialogContent
