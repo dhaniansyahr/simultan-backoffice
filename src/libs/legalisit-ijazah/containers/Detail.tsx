@@ -254,7 +254,7 @@ export default function DetailContainer() {
                           </Grid>
                         </Box>
                     </Grid>
-                      {/* tanggalPengambilan */}
+                                           {/* tanggalPengambilan or noResi */}
                       <Grid item xs={12}>
                         <Box
                           sx={{
@@ -265,14 +265,17 @@ export default function DetailContainer() {
                           <Grid container spacing={2}>
                             <Grid item xs={4}>
                               <Typography variant='body1' fontWeight={500}>
-                                Tanggal Pengambilan
+                                {data?.tempatPengambilan === 'Via_POS' ? 'No Resi' : 'Tanggal Pengambilan'}
                               </Typography>
                             </Grid>
                             <Grid item xs={8}>
                               <Typography variant='body1' color={'text.secondary'}>
-                                {data?.tanggalPengambilan
-                                  ? moment(data?.tanggalPengambilan).format('DD MMMM YYYY')
-                                  : '-'}
+                                {data?.tempatPengambilan === 'Via_POS' 
+                                  ? (data?.noResi || '-')
+                                  : (data?.tanggalPengambilan
+                                      ? moment(data?.tanggalPengambilan).format('DD MMMM YYYY')
+                                      : '-')
+                                }
                               </Typography>
                             </Grid>
                           </Grid>
