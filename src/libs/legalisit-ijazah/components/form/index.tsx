@@ -389,7 +389,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
         />
       </Grid>
 
-      {/* Show upload form when Via POS is selected */}
+      {/* Show upload form when Via POS is selected
       <Controller
         control={control}
         name='tempatPengambilan'
@@ -459,7 +459,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
             <></>
           )
         }
-      />
+      /> */}
     </Grid>
   )
 }
