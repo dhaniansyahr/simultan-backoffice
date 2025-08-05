@@ -1,27 +1,43 @@
 import React from 'react'
-import { Card, CardContent, Typography, Grid, Divider, Box } from '@mui/material'
+import { Card, CardContent, Typography, Grid, Divider, Box, Button, TextField, CircularProgress } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
 import 'react-datepicker/dist/react-datepicker.css'
 import { NextRouter, useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/stores'
 import toast from 'react-hot-toast'
 import { createCertificateLegalization } from 'src/stores/certificate-legalization/certificateLegalizationAction'
 import HeaderPage from 'src/components/shared/header-page'
-import ActionPage from 'src/components/shared/action-page'
 import FormLegalisirIjazah from '../components/form'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { uploadToStorage } from 'src/stores/storage/storageAction'
+import { useAuth } from 'src/hooks/useAuth'
+import { getDocument } from 'src/utils'
 
 const CreateContainer = () => {
   const dispatch: AppDispatch = useDispatch()
   const router: NextRouter = useRouter()
+  const { user } = useAuth()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadFile, setIsLoadFile] = useState<string>('')
+  const [step, setStep] = useState<number>(1)
+  const [formData, setFormData] = useState<any>(null)
+  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: string}>({}) // Store uploaded files
 
-  const { control, setValue, handleSubmit } = useForm()
+  const { control, setValue, handleSubmit, watch } = useForm()
+
+  // Watch for tempat pengambilan value
+  const tempatPengambilan = watch('tempatPengambilan')
+
+  // Restore uploaded files when component mounts or step changes
+  useEffect(() => {
+    Object.keys(uploadedFiles).forEach(key => {
+      setValue(key, uploadedFiles[key])
+    })
+  }, [uploadedFiles, setValue])
 
   const handleUploadDocument = async (key: string, file: File) => {
     setIsLoadFile(key)
@@ -32,18 +48,50 @@ const CreateContainer = () => {
       file: file
     }
 
-    // @ts-ignore
-    const res = await dispatch(uploadToStorage({ data: body }))
+    try {
+      // @ts-ignore
+      const res = await dispatch(uploadToStorage({ data: body }))
 
-    if (res.meta.requestStatus !== 'fulfilled') {
-      throw new Error(res.payload.response.data.message)
+      if (res.meta.requestStatus !== 'fulfilled') {
+        throw new Error(res.payload.response.data.message)
+      }
+
+      const fileUrl = res.payload.content.fileUrl
+      setValue(key, fileUrl)
+      
+      // Store uploaded file in state to preserve it
+      setUploadedFiles(prev => ({
+        ...prev,
+        [key]: fileUrl
+      }))
+      
+      setIsLoadFile('')
+    } catch (error) {
+      setIsLoadFile('')
+      toast.error('Gagal mengupload file')
     }
-
-    setValue(key, res.payload.content.fileUrl)
-    setIsLoadFile('')
   }
 
-  const handleCreate = handleSubmit(async (value: any) => {
+  const handleFirstStep = handleSubmit(async (value: any) => {
+    if (value.tempatPengambilan === 'Via_POS') {
+      // If Via POS, go to next step and preserve all data including uploaded files
+      const completeFormData = {
+        ...value,
+        ...uploadedFiles // Include all uploaded files
+      }
+      setFormData(completeFormData)
+      setStep(2)
+    } else {
+      // If pickup at faculty, directly create with uploaded files
+      const completeData = {
+        ...value,
+        ...uploadedFiles
+      }
+      handleCreate(completeData)
+    }
+  })
+
+  const handleCreate = async (value: any) => {
     setIsLoading(true)
     toast.loading('Waiting ...')
 
@@ -63,16 +111,245 @@ const CreateContainer = () => {
       toast.dismiss()
       toast.success(res?.payload?.message)
 
+      // Clear uploaded files after successful submission
+      setUploadedFiles({})
       router.back()
     })
+  }
+
+  const handleSecondStep = handleSubmit(async (value: any) => {
+    // Combine first step data with second step data and all uploaded files
+    const combinedData = {
+      ...formData,
+      buktiPembayaranOngkir: value.buktiPembayaranOngkir,
+      ...uploadedFiles // Ensure all uploaded files are included
+    }
+    handleCreate(combinedData)
   })
 
+  const handleBack = () => {
+    setStep(1)
+
+    // Don't reset form data or clear uploaded files
+    // setFormData(null) - Remove this line
+    // reset() - Remove this line
+    
+    // Restore form data from step 1
+    if (formData) {
+      Object.keys(formData).forEach(key => {
+        setValue(key, formData[key])
+      })
+    }
+  }
+
+  const handleRouterBack = () => {
+    // Show confirmation dialog if user has uploaded files
+    if (Object.keys(uploadedFiles).length > 0) {
+      const confirmLeave = window.confirm(
+        'Anda memiliki file yang sudah diupload. Apakah Anda yakin ingin meninggalkan halaman ini? Data akan hilang.'
+      )
+      
+      if (confirmLeave) {
+        setUploadedFiles({}) // Clear uploaded files
+        router.back()
+      }
+    } else {
+      router.back()
+    }
+  }
+
+  if (step === 2) {
+    // Second step - Upload bukti pembayaran ongkir
+    return (
+      <Card>
+        <HeaderPage 
+          title='Upload Bukti Pembayaran Ongkir' 
+          isDetail={true} 
+          onBack={handleRouterBack} // Use custom back handler
+        />
+
+        <CardContent style={{ padding: '16px 48px', borderBottom: '1px solid #f4f4f4' }}>
+          <form action='submit' onSubmit={handleSecondStep}>
+            <Grid container spacing={4} direction='row'>
+              <Grid item xs={6}>
+                <Grid container spacing={4}>
+                  <Grid item xs={12}>
+                    <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '20px' }}>
+                      Upload Bukti Pembayaran Ongkos Pengiriman
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Controller
+                      control={control}
+                      name='buktiPembayaranOngkir'
+                      render={({ field, formState: { errors } }) => (
+                        <>
+                          <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+                            Upload Bukti Biaya Pengiriman
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            value={
+                              field.value ? field.value.split('/').pop()?.replace(/%20/g, ' ') : 'Pilih file'
+                            }
+                            inputProps={{
+                              readOnly: true
+                            }}
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                bgcolor: '#fff'
+                              }
+                            }}
+                            InputProps={{
+                              endAdornment: (
+                                <LoadingButton
+                                  sx={{ whiteSpace: 'nowrap' }}
+                                  variant='outlined'
+                                  color='primary'
+                                  onClick={async () => {
+                                    const file = await getDocument(
+                                      `bukti_biaya_pengiriman_${user?.nomorIdentitas}`,
+                                      'image/*'
+                                    )
+
+                                    if (file) {
+                                      handleUploadDocument('buktiPembayaranOngkir', file)
+                                    }
+                                  }}
+                                  loading={isLoadFile === 'buktiPembayaranOngkir'}
+                                  disabled={isLoadFile !== ''}
+                                  loadingIndicator={<CircularProgress size={20} />}
+                                >
+                                  Pilih File
+                                </LoadingButton>
+                              )
+                            }}
+                            helperText={'Format file: JPG, JPEG, PNG; Max 10 MB'}
+                          />
+                          {errors.buktiPembayaranOngkir && (
+                            <Typography variant='body1' sx={{ color: 'red' }}>
+                              {errors.buktiPembayaranOngkir.message as string}
+                            </Typography>
+                          )}
+                        </>
+                      )}
+                      rules={{ required: 'Bukti Biaya Pengiriman harus diisi' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={6}>
+                <Card
+                  variant='outlined'
+                  sx={{ 
+                    padding: '16px', 
+                    backgroundColor: theme => hexToRGBA(theme.palette.grey[500], 0.12),
+                    mb: 2 
+                  }}
+                >
+                  <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                      <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                       Pembayaran Ongkos Pengiriman Legalisir Ijazah
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nama Bank
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : Bank BSI
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nama Rekening
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : Fakultas Pertanian USK
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nomor Rekening
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : 1234567890
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Grid container spacing={2} justifyContent="flex-end">
+                  <Grid item>
+                    <Button variant="outlined" onClick={handleBack}>
+                      Kembali
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <LoadingButton
+                      variant="contained"
+                      type="submit"
+                      loading={isLoading}
+                    >
+                      Simpan
+                    </LoadingButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </form>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // First step - original form
   return (
     <Card>
-      <HeaderPage title='Buat Pengajuan Legalisir Ijazah' isDetail={true} />
+      <HeaderPage 
+        title='Buat Pengajuan Legalisir Ijazah' 
+        isDetail={true} 
+        onBack={handleRouterBack} // Use custom back handler
+      />
 
       <CardContent style={{ padding: '16px 48px', borderBottom: '1px solid #f4f4f4' }}>
-        <form action='submit' onSubmit={handleCreate}>
+        <form action='submit' onSubmit={handleFirstStep}>
           <Grid container spacing={4} direction='row'>
             <Grid item xs={6}>
               <FormLegalisirIjazah
@@ -127,74 +404,10 @@ const CreateContainer = () => {
                         Besar, dan Rp. 20.000,- untuk wilayah luar Aceh.
                       </Typography>
                     </li>
-                      
                   </ul>
                 </Typography>
               </Card>
 
-              <Card
-                variant='outlined'
-                sx={{ padding: '16px', backgroundColor: theme => hexToRGBA(theme.palette.grey[500], 0.12) }}
-              >
-                <Grid container spacing={4}>
-                  <Grid item xs={12}>
-                    <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                     Pembayaran Ongkos Pengiriman Legalisir Ijazah
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Box>
-                      <Grid container spacing={4}>
-                        <Grid item xs={4}>
-                          <Typography variant='body1' color='initial'>
-                            Nama Bank
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                          <Typography variant='body1' color='initial'>
-                            : Bank BSI
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Box>
-                      <Grid container spacing={4}>
-                        <Grid item xs={4}>
-                          <Typography variant='body1' color='initial'>
-                            Nama Rekening
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                          <Typography variant='body1' color='initial'>
-                            : Fakultas Pertanian USK
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Box>
-                      <Grid container spacing={4}>
-                        <Grid item xs={4}>
-                          <Typography variant='body1' color='initial'>
-                            Nomor Rekening
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                          <Typography variant='body1' color='initial'>
-                            : 1234567890
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Card>
 
               <Card
                 variant='outlined'
@@ -266,7 +479,17 @@ const CreateContainer = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <ActionPage isLoading={isLoading} />
+              <Grid container spacing={2} justifyContent="flex-end">
+                <Grid item>
+                  <LoadingButton
+                    variant="contained"
+                    type="submit"
+                    loading={isLoading}
+                  >
+                    {tempatPengambilan === 'Via_POS' ? 'Selanjutnya' : 'Simpan'}
+                  </LoadingButton>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </form>
