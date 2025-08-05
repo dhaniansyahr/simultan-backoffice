@@ -1,11 +1,11 @@
-import { Box  } from '@mui/material'
+import { Box, TextField } from '@mui/material'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import Fade, { FadeProps } from '@mui/material/Fade'
 import Grid from '@mui/material/Grid'
 import React, { ReactElement, Ref, forwardRef, useState } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AppDispatch } from 'src/stores'
 import { useDispatch } from 'react-redux'
@@ -36,6 +36,9 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
 
   const [isLoading, setIsLoading] = useState(false)
 
+  // Check if pickup location is via POS
+  const isViaPOS = values?.tempatPengambilan === 'Via_POS'
+
   const handleClose = () => {
     setIsLoading(false)
     reset()
@@ -47,11 +50,21 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
 
   const onSubmit = handleSubmit(async (value: any) => {
     setIsLoading(true)
-    toast.loading('Verification...')
+    toast.loading('Processing...')
 
-    const body: any = Object.assign({}, value, {
-      tanggalPengambilan: moment(value?.tanggalPengambilan).format('YYYY-MM-DD')
-    })
+    let body: any = {}
+
+    if (isViaPOS) {
+      // For Via POS, send tracking number
+      body = {
+        noResi: value?.noResi ? value?.noResi.trim() : ''
+      }
+    } else {
+      // For pickup at location, send pickup date
+      body = {
+        tanggalPengambilan: moment(value?.tanggalPengambilan).format('YYYY-MM-DD')
+      }
+    }
 
     // @ts-ignore
     await dispatch(processCertificateLegalization({ data: body, id: values?.ulid })).then(res => {
@@ -82,7 +95,10 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
         }
       }}
     >
-      <HeaderDialog title='Tanggal Pengambilan Legalisir Ijazah' onClose={handleClose} />
+      <HeaderDialog 
+        title={isViaPOS ? 'Input Nomor Resi Pengiriman' : 'Tanggal Pengambilan Legalisir Ijazah'} 
+        onClose={handleClose} 
+      />
 
       <form action='submit' onSubmit={onSubmit}>
         <DialogContent
@@ -102,36 +118,49 @@ const DialogProses = ({ open, onClose, values }: RejectVerificatioProps) => {
               paddingBottom: '24px'
             }}
           >
-            <Grid item xs={12}>
-              <DatePickerInput
-                name='tanggalPengambilian'
-                control={control}
-                rules={{ required: 'Tanggal pengambilan harus diisi!' }}
-                label='Tanggal Pengambilan'
-                placeholder='YYYY-MM-DD'
-                dateFormat='yyyy-MM-dd'
-                popperContainer={({ children }) => <Box sx={{ position: 'fixed', zIndex: 99999 }}>{children}</Box>}
-              />
-            </Grid>
-            {/* <Grid item xs={12}>
-              <Controller
-                control={control}
-                name='tempatPengambilan'
-                render={({ field, fieldState: { error } }) => (
-                  <TextField
-                    fullWidth
-                    required
-                    label='Tempat Pengambilan'
-                    placeholder='Masukan Tempat Pengambilan'
-                    value={field.value ?? ''}
-                    onChange={field.onChange}
-                    error={!!error}
-                    helperText={error?.message}
-                  />
-                )}
-                rules={{ required: 'Tempat pengambilan harus diisi!' }}
-              />
-            </Grid> */}
+            {isViaPOS ? (
+
+              // Show tracking number input for Via POS
+              <Grid item xs={12}>
+                <Controller
+                  control={control}
+                  name='noResi' // Change this to match backend expectation
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      fullWidth
+                      required
+                      label='Nomor Resi Pengiriman'
+                      placeholder='Masukan nomor resi pengiriman'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      error={!!error}
+                      helperText={error?.message}
+                    />
+                  )}
+                  rules={{ 
+                    required: 'Nomor resi pengiriman harus diisi!',
+                    minLength: {
+                      value: 3,
+                      message: 'Nomor resi minimal 3 karakter'
+                    }
+                  }}
+                />
+              </Grid>
+            ) : (
+
+              // Show date picker for pickup at location
+              <Grid item xs={12}>
+                <DatePickerInput
+                  name='tanggalPengambilan' 
+                  control={control}
+                  rules={{ required: 'Tanggal pengambilan harus diisi!' }}
+                  label='Tanggal Pengambilan'
+                  placeholder='YYYY-MM-DD'
+                  dateFormat='yyyy-MM-dd'
+                  popperContainer={({ children }) => <Box sx={{ position: 'fixed', zIndex: 99999 }}>{children}</Box>}
+                />
+              </Grid>
+            )}
           </Grid>
         </DialogContent>
         <ActionDialog isDefault={true} isLoading={isLoading} onClose={handleClose} />
