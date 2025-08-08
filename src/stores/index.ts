@@ -7,6 +7,9 @@ import collegeCertificate from 'src/stores/college-certificate/certificateLegali
 import temporaryLeaveRequest from 'src/stores/temporary-leave-request/temporaryLeaveRequestSlice'
 import graduationSubmission from 'src/stores/graduation-submission/graduationSubmissionSlice'
 import certificateLegalization from 'src/stores/certificate-legalization/certificateLegalizationSlice'
+import suratKeteranganLulus from 'src/stores/surat-keterangan-lulus/suratKeteranganLulusSlice'
+
+// import rekomendasiMahasiswa from 'src/stores/rekomendasi-mahasiswa/rekomendasiMahasiswaSlice'
 
 export const store = configureStore({
   reducer: {
@@ -16,7 +19,10 @@ export const store = configureStore({
     collegeCertificate,
     temporaryLeaveRequest,
     graduationSubmission,
-    certificateLegalization
+    certificateLegalization,
+    suratKeteranganLulus,
+    
+    // rekomendasiMahasiswa
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
