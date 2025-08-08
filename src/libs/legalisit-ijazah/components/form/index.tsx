@@ -71,7 +71,7 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
           render={({ field, formState: { errors } }) => (
             <>
               <Typography variant='body1' sx={{ fontWeight: 'bold', marginTop: '10px' }}>
-                Jumlah Legalisir
+                Jumlah Legalisir Ijazah & Transkrip Nilai
               </Typography>
 
               <Select
@@ -345,6 +345,64 @@ const FormLegalisirIjazah = ({ control, handleUploadDocument, isLoadFile }: Form
             </>
           )}
           rules={{ required: 'Ijazah harus diisi' }}
+        />
+      </Grid>
+      
+      {/* // Grid item for upload bukti transkip nilai */}
+
+      <Grid item xs={12}>
+        <Controller
+          control={control}
+          name='buktiTranskrip'
+          render={({ field, formState: { errors } }) => (
+        <>
+          <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+            Upload Transkrip Nilai
+          </Typography>
+          <TextField
+            fullWidth
+            value={field.value ? field.value.split('/').pop()?.replace(/%20/g, ' ') : 'Pilih file'}
+            inputProps={{
+          readOnly: true
+            }}
+            sx={{
+          '& .MuiInputBase-root': {
+            bgcolor: '#fff'
+          }
+            }}
+            InputProps={{
+          endAdornment: (
+            <LoadingButton
+              sx={{ whiteSpace: 'nowrap' }}
+              variant='outlined'
+              color='primary'
+              onClick={async () => {
+            const file = await getDocument(`bukti_transkrip_${user?.nomorIdentitas}`, 'image/*')
+
+            console.log(file)
+
+            if (file) {
+              handleUploadDocument('buktiTranskrip', file)
+            }
+              }}
+              loading={isLoadFile === 'buktiTranskrip'}
+              disabled={isLoadFile !== ''}
+              loadingIndicator={<CircularProgress size={20} />}
+            >
+              Pilih File
+            </LoadingButton>
+          )
+            }}
+            helperText={'Format file: JPG, JPEG, PNG; Max 10 MB'}
+          />
+          {errors.buktiTranskrip && (
+            <Typography variant='body1' sx={{ color: 'red' }}>
+          {errors.buktiTranskrip.message as string}
+            </Typography>
+          )}
+        </>
+          )}
+          rules={{ required: 'Transkrip Nilai harus diisi' }}
         />
       </Grid>
 
