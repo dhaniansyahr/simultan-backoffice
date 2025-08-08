@@ -11,6 +11,8 @@ export type Subjects =
   | 'USER_MANAGEMENT'
   | 'ACL'
   | 'DASHBOARD'
+  | 'SURAT_KETERANGAN_LULUS'
+  | 'REKOMENDASI_MAHASISWA'
 
 // ** Action Types
 export type Actions = 'CREATE' | 'UPDATE' | 'VIEW' | 'EXPORT' | 'VERIFICATION' | 'NOMOR_SURAT'
