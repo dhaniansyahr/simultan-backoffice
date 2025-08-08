@@ -72,11 +72,13 @@ const Login = () => {
           </Box>
 
           <Box sx={{ mb: 4 }}>
-            {errors.map((error: any, index: number) => (
-              <Alert severity='error' sx={{ mb: 2 }} key={index}>
-                {error.message}
-              </Alert>
-            ))}
+            {errors &&
+              errors.length > 0 &&
+              errors.map((error: any, index: number) => (
+                <Alert severity='error' sx={{ mb: 2 }} key={index}>
+                  {error.message}
+                </Alert>
+              ))}
           </Box>
           <form noValidate autoComplete='off' onSubmit={handleSubmit(handleLogin)}>
             <Controller
