@@ -8,8 +8,7 @@ import temporaryLeaveRequest from 'src/stores/temporary-leave-request/temporaryL
 import graduationSubmission from 'src/stores/graduation-submission/graduationSubmissionSlice'
 import certificateLegalization from 'src/stores/certificate-legalization/certificateLegalizationSlice'
 import suratKeteranganLulus from 'src/stores/surat-keterangan-lulus/suratKeteranganLulusSlice'
-
-// import rekomendasiMahasiswa from 'src/stores/rekomendasi-mahasiswa/rekomendasiMahasiswaSlice'
+import rekomendasiBeasiswa from 'src/stores/rekomendasi-beasiswa/rekomendasiBeasiswaSlice'
 
 export const store = configureStore({
   reducer: {
@@ -21,8 +20,7 @@ export const store = configureStore({
     graduationSubmission,
     certificateLegalization,
     suratKeteranganLulus,
-    
-    // rekomendasiMahasiswa
+    rekomendasiBeasiswa
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

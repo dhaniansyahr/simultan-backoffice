@@ -12,7 +12,7 @@ export type Subjects =
   | 'ACL'
   | 'DASHBOARD'
   | 'SURAT_KETERANGAN_LULUS'
-  | 'REKOMENDASI_MAHASISWA'
+  | 'REKOMENDASI_BEASISWA'
 
 // ** Action Types
 export type Actions = 'CREATE' | 'UPDATE' | 'VIEW' | 'EXPORT' | 'VERIFICATION' | 'NOMOR_SURAT'
