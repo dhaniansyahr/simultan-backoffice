@@ -10,6 +10,8 @@ import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 import DialogVerifikasi from '../components/dialogs/DialogVerifikasi'
 import DialogPenolakan from '../components/dialogs/DialogPenolakan'
 import Can from 'src/components/acl/Can'
+import InputNomorSuratDialog from '../components/dialogs/InputMomorSurat'
+import DialogEditNomorSurat from '../components/dialogs/EditNomorSurat'
 
 export default function DetailContainer() {
   const dispatch = useAppDispatch()
@@ -24,6 +26,8 @@ export default function DetailContainer() {
 
   const [isReject, setIsReject] = useState(false)
   const [isVerify, setIsVerify] = useState(false)
+  const [isInputNomorSurat, setIsInputNomorSurat] = useState(false)
+  const [isEditNomorSurat, setIsEditNomorSurat] = useState(false)
 
   const handleGetData = async () => {
     setIsLoading(true)
@@ -46,6 +50,24 @@ export default function DetailContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, refresher])
 
+  const onVerificationOrInputNomorSurat = () => {
+    if (data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR AKADEMIK') {
+      setIsInputNomorSurat(true)
+    } else {
+      setIsVerify(true)
+    }
+  }
+
+  const onInputNomorSurat = () => {
+    setIsInputNomorSurat(true)
+  }
+
+  // Separate function for edit nomor surat (when already approved)
+  const onEditNomorSurat = () => {
+    setIsEditNomorSurat(true)
+  }
+
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
@@ -64,10 +86,25 @@ export default function DetailContainer() {
                   Tolak
                 </Button>
 
-                {/* Show Verifikasi button for pending requests */}
-                {data?.verifikasiStatus !== 'DISETUJUI' && (
-                  <Button variant='contained' color='primary' onClick={() => setIsVerify(true)}>
-                    Verifikasi
+               {/* Show Verifikasi button only when not in specific status */}
+                {data?.verifikasiStatus !== 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR AKADEMIK' &&
+                  data?.verifikasiStatus !== 'DISETUJUI' && (
+                    <Button variant='contained' color='primary' onClick={onVerificationOrInputNomorSurat}>
+                      Verifikasi
+                    </Button>
+                  )}
+
+                {/* Show Input Nomor Surat button when status is SEDANG INPUT */}
+                {data?.verifikasiStatus === 'SEDANG INPUT NOMOR SURAT OLEH OPERATOR AKADEMIK' && (
+                  <Button variant='contained' color='primary' onClick={onInputNomorSurat}>
+                    Input Nomor Surat
+                  </Button>
+                )}
+
+                {/* Show Edit Nomor Surat button when status is DISETUJUI */}
+                {data?.verifikasiStatus === 'DISETUJUI' && (
+                  <Button variant='contained' color='primary' onClick={onEditNomorSurat}>
+                    Edit Nomor Surat
                   </Button>
                 )}
               </Can>
@@ -384,6 +421,10 @@ export default function DetailContainer() {
         closeVerification={() => setIsVerify(false)}
         values={data}
       />
+
+      <InputNomorSuratDialog open={isInputNomorSurat} onClose={() => setIsInputNomorSurat(false)} values={data} />
+      <DialogEditNomorSurat open={isEditNomorSurat} onClose={() => setIsEditNomorSurat(false)} values={data} />
+
     </Grid>
   )
 }

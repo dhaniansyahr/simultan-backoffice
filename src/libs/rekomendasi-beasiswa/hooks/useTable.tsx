@@ -5,11 +5,14 @@ import moment from 'moment'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import Can from 'src/components/acl/Can'
-import { getAllRekomendasiBeasiswa } from 'src/stores/rekomendasi-beasiswa/rekomendasiBeasiswaAction'
+import {
+  getAllRekomendasiBeasiswa,
+  getAllRekomendasiBeasiswaHistory
+} from 'src/stores/rekomendasi-beasiswa/rekomendasiBeasiswaAction'
 import { formatString, getStatus } from 'src/utils'
 import { useAppDispatch, useAppSelector } from 'src/utils/dispatch'
 
-export const useTable = () => {
+export const useTable = (tab?: string) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
@@ -19,6 +22,28 @@ export const useTable = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [page, setPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
+
+  // Function to handle download surat
+  const handleDownloadSurat = async (id: string) => {
+    // @ts-ignore
+    const { toast } = await import('react-hot-toast')
+    toast.loading('Printing...')
+
+    // Import the correct action for rekomendasi beasiswa
+    const { printRekomendasiBeasiswa } = await import('src/stores/rekomendasi-beasiswa/rekomendasiBeasiswaAction')
+
+    // @ts-ignore
+    await dispatch(printRekomendasiBeasiswa({ id })).then((res: any) => {
+      if (res?.meta?.requestStatus !== 'fulfilled') {
+        toast.dismiss()
+        toast.error(res?.payload?.response?.data?.message)
+        return
+      }
+
+      toast.dismiss()
+      toast.success(res?.payload?.message)
+    })
+  }
 
   const columns = [
     {
@@ -128,6 +153,17 @@ export const useTable = () => {
                 </IconButton>
               </Tooltip>
             </Can>
+            <Can I='EXPORT' a='REKOMENDASI_BEASISWA'>
+              <Tooltip title='Cetak PDF'>
+                <IconButton
+                  onClick={() => handleDownloadSurat(params?.row?.ulid)}
+                  disabled={getStatus(params?.row?.verifikasiStatus).text !== 'DISETUJUI'}
+                  size='small'
+                >
+                  <Icon icon='ic:baseline-print' color='primary' />
+                </IconButton>
+              </Tooltip>
+            </Can>
           </Box>
         )
       }
@@ -164,15 +200,54 @@ export const useTable = () => {
     setIsLoading(false)
   }
 
+  const handleGetHistory = async (isPagination = false) => {
+    setIsLoading(true)
+
+    const params = {
+      page: isPagination ? page : 1,
+      rows: pageSize
+    }
+
+    // @ts-ignore
+    await dispatch(getAllRekomendasiBeasiswaHistory(params)).then((res: any) => {
+      if (
+        !(res.payload.content?.entries ?? []).some((obj: any) =>
+          (data?.entries ?? []).some((newObj: any) => obj.id === newObj.id)
+        ) &&
+        isPagination
+      ) {
+        const _entries = [...(data?.entries ?? []), ...(res.payload.content?.entries ?? [])]
+        setData(Object.assign({}, res.payload.content, { entries: _entries }))
+      } else {
+        if (!res.payload.content?.entries?.length && res.payload.content?.totalPage === 1) {
+          setData(null)
+        } else if (!isPagination) {
+          setData(res.payload.content)
+        }
+      }
+    })
+
+    setIsLoading(false)
+  }
+
   useEffect(() => {
     setPage(1)
-    handleGetAll(false)
+    setData(null) // Reset data when tab changes
+    if (tab === 'HISTORY') {
+      handleGetHistory(false)
+    } else {
+      handleGetAll(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresher])
+  }, [refresher, tab])
 
   useEffect(() => {
     if (page !== 1) {
-      handleGetAll(true)
+      if (tab === 'HISTORY') {
+        handleGetHistory(true)
+      } else {
+        handleGetAll(true)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize])

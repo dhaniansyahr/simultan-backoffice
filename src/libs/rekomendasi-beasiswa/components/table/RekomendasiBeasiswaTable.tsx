@@ -1,19 +1,31 @@
-import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Typography } from '@mui/material'
+import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Divider, Grid, Typography } from '@mui/material'
 import { DataGrid, gridClasses } from '@mui/x-data-grid'
 import { Icon } from '@iconify/react'
 import { useRouter } from 'next/router'
 import { useTable } from '../../hooks/useTable'
 import Can from 'src/components/acl/Can'
-
+import { useAuth } from 'src/hooks/useAuth'
+import { useState } from 'react'
+import DataTable from 'src/components/shared/data-table'
 
 export default function RekomendasiBeasiswaTable() {
   const router = useRouter()
+  const { user } = useAuth()
 
-  const { data, isLoading, page, pageSize, columns, setPage, setPageSize } = useTable()
+  // State
+  const [tab, setTab] = useState<string>('SEDANG DIAJUKAN')
+
+  const { columns, data, isLoading, page, pageSize, setPage, setPageSize } = useTable(tab)
+
+  const onPaginationModelChange = (newModel: any) => {
+    setPage(newModel.page + 1)
+    setPageSize(newModel.pageSize)
+  }
 
   const onDisable = data?.entries?.some(
-   (item:any) => item?.verifikasiStatus === 'DIPROSES OLEH OPERATOR AKADEMIK' ||
-                item?.verifikasiStatus === 'DIPROSES OLEH KASUBBAG AKADEMIK'
+    (item: any) =>
+      item?.verifikasiStatus === 'DIPROSES OLEH OPERATOR AKADEMIK' ||
+      item?.verifikasiStatus === 'DIPROSES OLEH KASUBBAG AKADEMIK'
   )
 
   return (
@@ -57,33 +69,44 @@ export default function RekomendasiBeasiswaTable() {
         }}
       />
       <CardContent style={{ paddingInline: '0px' }}>
-        <DataGrid
-          autoHeight
-          rows={data?.entries ?? []}
-          columns={columns}
-          pagination
-          disableColumnFilter
-          disableColumnMenu
-          disableColumnSelector
-          rowCount={data?.totalData ?? 0}
-          paginationModel={{
-            page: page - 1,
-            pageSize: pageSize
-          }}
-          onPaginationModelChange={(newModel: any) => {
-            setPage(newModel.page + 1)
-            setPageSize(newModel.pageSize)
-          }}
-          loading={isLoading}
-          slots={{
-            loadingOverlay: CircularProgress
-          }}
-          sx={{
-            [`& .${gridClasses.cell}`]: {
-              py: 1
-            }
-          }}
-        />
+        <Grid container spacing={4}>
+          {['OPERATOR_AKADEMIK', 'KASUBBAG_AKADEMIK'].includes(user?.role || '') && (
+            <>
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 4, py: 2 }}>
+                  {['SEDANG DIAJUKAN', 'HISTORY'].map(item => (
+                    <Button
+                      key={item}
+                      variant='outlined'
+                      color='primary'
+                      sx={{
+                        backgroundColor: tab === item ? 'primary.main' : 'transparent',
+                        color: tab === item ? 'white' : 'primary.main',
+                        borderColor: tab === item ? 'primary.main' : 'primary.main'
+                      }}
+                      onClick={() => setTab(item)}
+                    >
+                      {item}
+                    </Button>
+                  ))}
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+            </>
+          )}
+          <Grid item xs={12}>
+            <DataTable
+              data={data}
+              columns={columns}
+              isLoading={isLoading}
+              page={page}
+              pageSize={pageSize}
+              onPaginationModelChange={onPaginationModelChange}
+            />
+          </Grid>
+        </Grid>
       </CardContent>
     </Card>
   )
