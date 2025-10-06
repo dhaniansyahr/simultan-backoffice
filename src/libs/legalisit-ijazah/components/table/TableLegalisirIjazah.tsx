@@ -25,7 +25,7 @@ export default function CertificateLegalizationTable() {
   return (
     <Card>
       <HeaderPage
-        title='Pengajuan Legalisir Ijazah'
+        title='Pengajuan Legalisir Ijazah & Transkrip Nilai'
         isDetail={false}
         action={
           <Can I='CREATE' a='LEGALISIR_IJAZAH'>

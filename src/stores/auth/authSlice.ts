@@ -13,11 +13,21 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setIsRefresh: (state, action) => {}
+    setIsRefresh: (state, action) => {
+      // Use state and action or replace with _
+      state.isRefresh = action.payload
+    }
   },
   extraReducers: builder => {
-    builder.addCase(resetPassword.fulfilled, (state, { payload }) => {})
-    builder.addCase(resetPassword.rejected, state => {})
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    builder.addCase(resetPassword.fulfilled, (state, { payload }) => {
+      // Optionally handle fulfilled state, e.g., set isRefresh to true
+      state.isRefresh = true
+    })
+    builder.addCase(resetPassword.rejected, (state) => {
+      // Optionally handle rejected state, e.g., set isRefresh to false
+      state.isRefresh = false
+    })
   }
 })
 

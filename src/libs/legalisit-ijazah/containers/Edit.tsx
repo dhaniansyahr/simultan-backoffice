@@ -134,7 +134,18 @@ const EditContainer = () => {
                     <ul>
                       <li>
                         <Typography variant='body2'>
-                          Maksimal Jumlah Legalisir Ijazah yang dapat diajukan adalah 10 (sepuluh) buah.
+                          Maksimal Jumlah Legalisir Ijazah yang dapat diajukan adalah minimal 5 dan maksimal 20.
+                        </Typography>
+                      </li>
+                      <li>
+                        <Typography variant='body2'>
+                          Pengiriman pos dilakukan untuk alamat yang berada di luar kota Banda Aceh.
+                        </Typography>
+                      </li>
+                      <li>
+                        <Typography variant='body2'>
+                          Untuk alamat di dalam kota Banda Aceh, pengambilan dokumen dapat dilakukan di Fakultas
+                          Pertanian USK.
                         </Typography>
                       </li>
                       <li>
@@ -147,7 +158,7 @@ const EditContainer = () => {
                       </li>
                       <li>
                         <Typography variant='body2'>
-                          Biaya legalisir ijazah adalah sebesar Rp. 10.000,- per buah.
+                          Biaya legalisir ijazah adalah sebesar Rp. 2.500,- per buah.
                         </Typography>
                       </li>
                     </ul>
@@ -161,7 +172,7 @@ const EditContainer = () => {
                   <Grid container spacing={4}>
                     <Grid item xs={12}>
                       <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
-                        Informasi Pembayaran
+                        Pembayaran Ongkos Pengiriman Legalisir Ijazah
                       </Typography>
                     </Grid>
 
@@ -193,6 +204,70 @@ const EditContainer = () => {
                           <Grid item xs={8}>
                             <Typography variant='body1' color='initial'>
                               : Fakultas Pertanian USK
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nomor Rekening
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : 1234567890
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Card>
+
+                <Card
+                  variant='outlined'
+                  sx={{ padding: '16px', backgroundColor: theme => hexToRGBA(theme.palette.grey[500], 0.12) }}
+                >
+                  <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                      <Typography variant='h6' sx={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                        Pembayaran Legalisir Ijazah
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nama Bank
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : Bank BSI
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box>
+                        <Grid container spacing={4}>
+                          <Grid item xs={4}>
+                            <Typography variant='body1' color='initial'>
+                              Nama Rekening
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={8}>
+                            <Typography variant='body1' color='initial'>
+                              : Biro Akademik USK
                             </Typography>
                           </Grid>
                         </Grid>
